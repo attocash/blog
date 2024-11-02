@@ -7,3 +7,8 @@ node:
   label: node
   permalink: /node
   description: Node
+
+decentralization:
+  label: decentralization
+  permalink: /decentralization
+  description: Decentralization
