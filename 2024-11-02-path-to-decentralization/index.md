@@ -3,6 +3,7 @@ slug: path-to-decentralization
 title: Path to Decentralization
 authors: [rotilho]
 tags: [decentralization]
+image: ./decentralization.webp
 ---
 
 # Path to Decentralization

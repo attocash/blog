@@ -2,6 +2,7 @@
 slug: is-atto-a-fork-of-nano
 title: Is Atto a Fork of Nano?
 authors: [ rotilho ]
+image: ./fork.webp
 ---
 
 # Is Atto a Fork of Nano? Let's Clear Things Up
