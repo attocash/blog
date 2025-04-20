@@ -104,10 +104,10 @@ Don't forget to set `ATTO_PUBLIC_URI`, otherwise your node won't be reachable. `
 
 ## Step 4: Verify Your Node
 
-To verify that your node is running correctly, you can check its status by executing:
+To verify that your node is running correctly, you can check its status by executing the following on the same machine:
 
 ```bash
-docker compose exec node curl -f http://localhost:8081/health
+curl -f http://localhost:8081/health
 ```
 
 This command will provide you with information about the node's health status.
