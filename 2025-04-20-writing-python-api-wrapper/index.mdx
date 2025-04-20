@@ -2,8 +2,8 @@
 slug: writing-python-api-wrapper
 title: Writing a Python Library for the Atto Node API
 description: 'Building a Python wrapper for the Atto Node API: decoding Atto addresses, implementing sync & async clients with httpx & Trio, and publishing a library to PyPI.'
-authors: [waldo]
-image: ./image-social.png
+authors: [waldolemmer]
+image: ./image-social.jpg
 ---
 
 I recently wrote a Python wrapper for the Atto Node API
@@ -13,14 +13,11 @@ Python’s async model, to publishing a usable API wrapper. Hopefully, this help
 someone else who's either interested in Atto or wants to see what writing an
 API wrapper looks like from a beginner's perspective.
 
----
-
 ## 🚀 Why I Started
 
 At the time, there were no Python API wrappers available for Atto. The only
-tools available were browser-based:  
-- [`wallet.atto.cash`](https://wallet.atto.cash)  
-- [`atto.cash/explorer`](https://atto.cash/explorer)
+libraries available targeted JS/WASM, used only by the [wallet](https://wallet.atto.cash/),
+and Kotlin.
 
 I wanted to play around with the API, but to do that, I needed to convert an
 Atto public key (a base32-encoded string) into a hex string, which the API
@@ -35,8 +32,7 @@ project.
 
 As a student, this felt like a fun way to procrastinate from real work™.
 
----
-
+<!-- truncate -->
 ## 🧠 Reverse Engineering the Address Format
 
 I started by figuring out how the Atto address (e.g., `atto://...`) becomes a
@@ -82,8 +78,6 @@ for byte in address_bytes[1:-5]:
 
 Clean hex output, and the API was happy.
 
----
-
 ## 🧪 Curl Fatigue and First Scripts
 
 I initially used `curl` for quick API checks, but copying and pasting addresses
@@ -92,8 +86,6 @@ Python to make it easier.
 
 Eventually, I wanted something cleaner and more structured—a proper API
 wrapper.
-
----
 
 ## 🧰 Building the Library
 
@@ -136,8 +128,6 @@ asyncio.run(stream_lines("http://example.com/stream"))
 
 This was my first time diving into async io. Naturally, I got confused. A lot.
 
----
-
 ## 🧵 Learning Async the Hard Way
 
 I turned to [Real Python’s async
@@ -145,7 +135,7 @@ guide](https://realpython.com/async-io-python/)—an excellent but *long* read.
 It gave me a rough understanding.
 
 Then I discovered the [Trio](https://github.com/python-trio/trio/) project and
-Nathaniel J. Smith’s blog post:  
+Nathaniel J. Smith’s blog post:
 ["Notes on structured concurrency (or: Go statement considered
 harmful)"](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/)
 — I would highly recommend it.
@@ -153,8 +143,6 @@ harmful)"](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-stateme
 I decided to build my async version using `trio`. But `aiohttp`, the popular
 async HTTP library shown in the Real Python article, doesn’t support Trio
 natively. So I found `httpx` instead, which does.
-
----
 
 ## 🧩 Sync vs Async: The Dilemma
 
@@ -172,8 +160,6 @@ approached it methodically:
 
 From that research, I concluded that supporting both is the best option.
 Separate clients—one sync, one async.
-
----
 
 ## 🧾 Summary
 
@@ -194,9 +180,11 @@ And, as a bonus, I got to write documentation (using
 `pip install atto.py`. All that in roughly half a day using
 [PyScaffold](https://pyscaffold.org/).
 
----
-
 If you’re interested in testing it out, I’d love to hear from you! You can find
 the repo [here](https://github.com/waldolemmer/atto.py). I'm not currently
 accepting pull requests, though, because there's still a lot of work left that
 I have planned out in my head.
+
+---
+**Disclaimer:** This is a guest post contributed by a community member. The views and opinions expressed are those of the author and do not necessarily reflect those of the Atto or its maintainers.
+While we appreciate and encourage community contributions, we cannot guarantee the accuracy or completeness of third-party content.
