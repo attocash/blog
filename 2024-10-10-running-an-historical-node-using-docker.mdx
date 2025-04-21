@@ -99,15 +99,15 @@ This will start both the MySQL service and the Atto node service in detached mod
 The configuration for the node is already provided in the `docker-compose.yml` file under the environment variables section. You should modify the `ATTO_PUBLIC_URI`, `ATTO_DB_NAME`, `ATTO_DB_USER`, `ATTO_DB_PASSWORD`, and other settings to suit your setup.
 
 :::warning
-Don't forget to set `ATTO_PUBLIC_URI`, otherwise your node won't be reachable.
+Don't forget to set `ATTO_PUBLIC_URI`, otherwise your node won't be reachable. `{external-ip}` should be replaced with your actual public IP address, which can be found at [whatismyip.com](https://whatismyipaddress.com/).
 :::
 
 ## Step 4: Verify Your Node
 
-To verify that your node is running correctly, you can check its status by executing:
+To verify that your node is running correctly, you can check its status by executing the following on the same machine:
 
 ```bash
-docker compose exec node curl -f http://localhost:8081/health
+curl -f http://localhost:8081/health
 ```
 
 This command will provide you with information about the node's health status.
