@@ -1,0 +1,124 @@
+---
+slug: new-distribution-strategy
+title: "A New Distribution Strategy: Balancing Growth and Stability"
+description: "Atto’s stability-first shift: dynamic emissions and active liquidity to curb volatility, avoid FOMO cycles, and make Atto practical money for everyday use."
+authors: [rotilho]
+image: ./image-social.jpg
+---
+
+
+
+import IdealImage from "@theme/IdealImage";
+
+<IdealImage
+  img={require('./image.jpg')}
+  alt="Atto is now live on LCX"
+/>
+<br />
+<br />
+
+Atto’s protocol has a *fixed supply* of 18 billion coins (all pre-minted), so **no new Atto can be created** by consensus and there is
+“no inflation” built into the system. In practice, however, tokens enter circulation through our various distribution programs
+(mining, faucet, contributions, etc.), so circulating supply **rises over time**.  For example, Atto currently releases 5,000 tokens per
+minute via Folding\@Home rewards, which equates to roughly 1.2% of total supply *per month*.  At around 6% circulating today, the planned
+release pace (≈1.2% of *total* supply per month ≈ 15% annualized) implies a **much larger increase relative to today’s circulating base**
+—on the order of \~250–300% over a year—until circulation grows. In other words, distributing \~15% of total supply in year one is roughly
+3× the current circulating supply.  This practical “inflation” helps bootstrap use, but it also means many newly-rewarded users may
+immediately sell, creating **downward price pressure**.
+
+<!-- truncate -->
+
+In other words, Atto faces a distribution dilemma. We *want* to put tokens in people’s hands quickly – to build trust in the network
+and encourage real usage – but rapid distribution fuels selling pressure. To manage this, we’ll act similarly to how fiat is managed:
+**add liquidity when demand rises, and soften supply when demand falls**. In practice, that means injecting extra buy support if the
+market is climbing, and carefully removing liquidity if it’s dropping. In traditional finance, liquidity providers ensure stable crypto
+markets by keeping buy/sell orders in place and tight spreads. We intend to follow that lead: using some of the gains from high prices
+to seed buy orders, and pulling back when the market cools. We expect this strategy to *reduce* the amplitude of “boom–bust” swings;
+
+## How Price Forms and Why Volatility Hurts
+
+At its core, **price is set by supply versus demand**.  If supply grows faster than demand, price tends to fall; conversely,
+if demand surges with limited supply, price spikes.  By *controlling one side of this equation* – namely, the supply (emission rate)
+– we can influence stability.  A larger, steady supply of coins typically reduces price volatility, whereas an extremely tight or
+fixed supply amplifies it. However, we cannot control demand or exogenous events; these measures aim to moderate—not fix—price swings.
+
+Wide swings can scare off exactly the long-term users and businesses we want.  Past altcoins provide cautionary tales: Dash’s price,
+for instance, surged almost **9,000% in 2017** (from \~\$20 to an all-time high around \$1,700) and then **crashed over 90%** in 2018.
+Nano (formerly RaiBlocks) rocketed from about \$3 to \$37 in a matter of weeks during 2017, then collapsed soon after.
+Cardano’s ADA similarly hit roughly \$1.16 in early 2018 before plunging to \~\$0.04 by year’s end.
+These roller-coaster charts – a steep climb followed by a steep fall – are exactly what we want to avoid. Illustrated below is a
+symbolic example of such volatility: rapid spikes and crashes tend to *attract speculators and FOMO traders*, but they drive away cautious,
+long-term adopters.
+
+<IdealImage
+  img={require('./cardano.png')}
+  alt="Cardano price volatility"
+/>
+
+
+
+## Reducing Inflation to Keep Prices Steady
+
+We have two levers to balance supply and demand: distribution (inflation) and liquidity management.  By
+**dynamically adjusting miner rewards**, we directly control one key inflation variable.  The plan is as follows:
+
+**Weekly adjustment rules (simple):**
+
+- **Baseline:** 5,000 Atto/min (Folding@Home).
+- **When price falls:** For each full −1% over the last 7 days, cut **one step** on this ladder: 5k → 4k → 3k → 2k → 1k → 500 → 250 → 100 (floor).
+*Example:* −3% week ⇒ 5k → 2k (three steps).
+- **When price rises:** If the 7‑day change is ≥ +1%, raise **one step max** for the next week, regardless of the size of the increase.
+*Example:* +3% week at 2k ⇒ 3k (one step).
+- **Flat band:** If the 7‑day change is between −1% and +1% (inclusive), **no change**.
+- **Timing:** We measure the 7‑day change once per week and apply the new rate for the **entire following week**.
+- **Ceiling/Flex:** We may temporarily **exceed 5k/min** later to meet long‑term issuance targets;
+
+*The asymmetry (faster cuts than increases) is intentional to dampen dramatic swings.*
+
+This mechanism lets us “soften” crashes by throttling new sell pressure, while still rewarding growth. It is a policy tool, not a promise
+of outcomes; market conditions and external venues can still produce large moves.  Importantly, we have the
+flexibility to exceed 5,000/minute in future weeks if needed to hit our *long-term targets*.  Our goal remains roughly 15% issuance
+in the first year **of the total supply** through **folding\@home and faucet**; note this corresponds to a much higher growth rate relative
+to the *current* circulating supply in the current phase. Any periods of supply cuts can later be offset by modest rate increases.
+
+:::warning
+For now, weekly adjustments are computed and applied manually; minor timing variance may occur until full automation.
+:::
+
+## Stability Enables Atto as Money
+
+The whole point of this strategy is to make Atto **usable money**, not just a speculative asset. Stable, predictable prices mean people
+and businesses can hold and spend Atto without worrying about sudden losses of value.  We believe extreme volatility undermines
+cryptocurrencies as a medium of exchange.  By contrast, a price that only moves within a narrow band encourages real usage.
+In effect, we’re aiming to meet ordinary users where they are – on their smartphones and point-of-sale apps – with reasonable confidence
+that their balance won’t evaporate overnight.  Imagine someone checking Atto’s value on their phone and seeing only mild, controlled
+fluctuations. Greater stability is what can make Atto feel more like cash and less like a purely speculative asset.
+
+Additionally, stable prices *also avoid the pitfalls of early FOMO*.  When an altcoin rockets then crashes, it draws mostly traders hoping
+to flip gains, not genuine adopters. We want Atto to build gradually on real usage.  Adding liquidity and restraining distribution are
+tools to “keep the ship steady” and **inspire confidence in the network and Atto team**.
+
+## A Strategic Shift: Long-Term Focus Over Hype
+
+Finally, this announcement marks a conscious change in our approach.  Earlier plans for aggressive promotions and giveaways ran the
+risk of *cannibalizing price stability*. We recognize now that free coins and big marketing pushes could flood the market and destabilize
+value. Instead, we will **prioritize Atto’s behavior as cash**.  That doesn’t mean no marketing at all, but rather more measured
+campaigns that don’t overshoot the market’s capacity. Our aim is to build genuine, long-term adoption: stable prices, organic growth,
+and a broad base of users and contributors.
+
+In summary, Atto’s protocol remains zero-inflation by design, but we face practical circulating inflation from our distribution.
+By using a dynamic emission schedule and smart liquidity management, we can take control of one leg of the price equation. This lets us
+smooth out volatility, **reduce speculative FOMO**, and keep Atto on track as a reliable digital currency. Stable prices will encourage
+usage, not just trading, which is essential if Atto is to function as money.
+
+
+## Disclosure & Risk Notice
+
+- This strategy is **an attempt to reduce volatility**, but there is **no guarantee** prices will be stable.
+- Cryptocurrency markets are risky. Prices can go **down as well as up**, and you may **lose money**.
+- Past performance and policy settings do not guarantee future results.
+- Emission targets and parameters (e.g., step thresholds and per‑minute rates) may be adjusted over time based on distribution progress and market conditions.
+- Liquidity operations may be added, reduced, or paused depending on market conditions and treasury constraints.
+- External venues and macro events are outside our control and can cause large moves.
+- During the initial phase, weekly emissions adjustments are performed manually; execution timing may vary slightly until automation is in place.
+- Nothing in this article constitutes **financial, legal, or tax advice**. Please do your own research.
