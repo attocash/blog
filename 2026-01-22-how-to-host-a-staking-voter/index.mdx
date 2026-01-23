@@ -178,7 +178,7 @@ Port <port>
 PermitRootLogin prohibit-password
 ```
 
-To apply the configuration, run the following two commands:
+The bottom of the screen shows how to exit nano. Press Ctrl+X. To apply the configuration, run the following two commands:
 
 ```
 sudo systemctl daemon-reload
@@ -187,10 +187,8 @@ sudo systemctl restart ssh.socket
 
 If the terminal hangs after the first command, open a new terminal and log in with `ssh <username>@<IP address>`.
 
-After running the second command, logging into your server will require running `ssh -p <port> <username>@<IP address>`.
-
-The bottom of the screen shows how to exit nano. Press Ctrl+X. Now, as long as your password is strong, your system is secured against
-unauthorized login attempts.
+After running the second command, logging into your server will require running `ssh -p <port> <username>@<IP address>`. Now, as long as
+your password is strong, your system is secured against unauthorized login attempts.
 
 ### Updating the System
 
