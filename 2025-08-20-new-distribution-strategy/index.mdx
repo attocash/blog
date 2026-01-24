@@ -19,7 +19,7 @@ import IdealImage from "@theme/IdealImage";
 
 Atto’s protocol has a *fixed supply* of 18 billion coins (all pre-minted), so **no new Atto can be created** by consensus and there is
 “no inflation” built into the system. In practice, however, coins enter circulation through our various distribution programs
-(mining, faucet, contributions, etc.), so circulating supply **rises over time**.  For example, Atto currently releases 5,000 coins per
+(mining, faucet, contributions, etc.), so circulating supply **rises over time**.  For example, Atto used to releases 5,000 coins per
 minute via Folding\@Home rewards, which equates to roughly 1.2% of total supply *per month*.  At around 6% circulating today, the planned
 release pace (≈1.2% of *total* supply per month ≈ 15% annualized) implies a **much larger increase relative to today’s circulating base**
 —on the order of \~250–300% over a year—until circulation grows. In other words, distributing \~15% of total supply in year one is roughly
@@ -60,30 +60,41 @@ long-term adopters.
 ## Reducing Inflation to Keep Prices Steady
 
 We have two levers to balance supply and demand: distribution (inflation) and liquidity management.  By
-**dynamically adjusting miner rewards**, we directly control one key inflation variable.  The plan is as follows:
+**dynamically adjusting emissions**, we directly control one key inflation variable.
 
-**Weekly adjustment rules (simple):**
+### Growth Stability Index (GSI)
 
-- **Baseline:** 5,000 Atto/min (Folding@Home).
-- **When price falls:** For each full −1% over the last 7 days, cut **one step** on this ladder: 5k → 4k → 3k → 2k → 1k → 500 → 250 → 100 (floor).
-*Example:* −3% week ⇒ 5k → 2k (three steps).
-- **When price rises:** If the 7‑day change is ≥ +1%, raise **one step max** for the next week, regardless of the size of the increase.
-*Example:* +3% week at 2k ⇒ 3k (one step).
-- **Flat band:** If the 7‑day change is between −1% and +1% (inclusive), **no change**.
-- **Timing:** We measure the 7‑day change once per week and apply the new rate for the **entire following week**.
-- **Ceiling/Flex:** We may temporarily **exceed 5k/min** later to meet long‑term issuance targets;
+We now use the **[Growth Stability Index (GSI)](/docs/growth-stability-index)** to dynamically adjust distribution rates. The GSI positions the current price on a scale from 0 to 1 based on:
 
-*The asymmetry (faster cuts than increases) is intentional to dampen dramatic swings.*
+- **7-Day Average Price** (smoothed to reduce noise)
+- **All-Time High (ATH)**
+- **1-Month Low**
 
-This mechanism lets us “soften” crashes by throttling new sell pressure, while still rewarding growth. It is a policy tool, not a promise
-of outcomes; market conditions and external venues can still produce large moves.  Importantly, we have the
-flexibility to exceed 5,000/minute in future weeks if needed to hit our *long-term targets*.  Our goal remains roughly 15% issuance
-in the first year **of the total supply** through **folding\@home and faucet**; note this corresponds to a much higher growth rate relative
-to the *current* circulating supply in the current phase. Any periods of supply cuts can later be offset by modest rate increases.
+The formula: `GSI = (7-Day Average Price - 1-Month Low) / (ATH - 1-Month Low)`
 
-:::warning
-For now, weekly adjustments are computed and applied manually; minor timing variance may occur until full automation.
-:::
+**Key features:**
+- **Instant downward adjustment**: When market conditions worsen, distribution rates drop immediately
+- **Capped upward adjustment**: When conditions improve, rates increase gradually (max +0.01 per cycle)
+- **Automated**: GSI is calculated and applied automatically, removing manual timing variance
+
+This asymmetry is intentional—it allows us to **quickly reduce distribution** during price drops (protecting against selling pressure) while **gradually increasing distribution** during rallies (preventing overheating).
+
+The GSI will affect all distribution programs subject to dynamic adjustment: mining (Folding@Home), faucet, and staking rewards.
+
+<details>
+<summary>📜 Original Approach (Historical)</summary>
+
+When this strategy was first announced, we used a simpler weekly adjustment system:
+
+- **Baseline:** 5,000 Atto/min (Folding@Home)
+- **When price falls:** For each full −1% over 7 days, cut one step: 5k → 4k → 3k → 2k → 1k → 500 → 250 → 100 (floor)
+- **When price rises:** If 7-day change ≥ +1%, raise one step max
+- **Flat band:** Between −1% and +1%, no change
+- **Timing:** Weekly manual adjustments
+
+This approach worked but required manual intervention and only considered short-term price changes. The GSI improves on this by using a broader market context (ATH and 1-month low) and running automatically.
+
+</details>
 
 ## Stability Enables Atto as Money
 
