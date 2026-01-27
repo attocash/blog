@@ -63,16 +63,16 @@ if the number is far below what they’ve seen. It’s a simple addition with bi
 ## Node Identification – Less Chatter for Listeners
 
 Another difference is how Atto handles network “chatter” during voting. Both Nano and Atto use **Open Representative Voting (ORV)**,
-where certain nodes (representatives) vote on which transactions are valid. In Nano, all nodes end up hearing all vote messages,
+where certain nodes (voters) vote on which transactions are valid. In Nano, all nodes end up hearing all vote messages,
 even if some nodes aren’t participating in voting. It’s a bit like everyone in a room having to listen to a panel of judges debate
 and vote on every single issue – even the people in the back who are just observers. That can create a lot of background noise!
 
 Atto introduces a way for nodes to **identify their roles**, effectively saying whether they’re active voters or just followers.
-In practice, this means a node that isn’t a voting representative doesn’t need to receive every single vote message flying around.
-It can just receive the final outcomes (the confirmed transactions) without getting bogged down in the intermediate voting chatter.
+In practice, this means a node that isn’t a voter doesn’t need to receive every single vote message flying around.
+It can just receive the final outcomes (the final votes) without getting bogged down in the intermediate voting chatter.
 Using our analogy: the observers in the room don’t have to hear every word the judges say; they just hear the final verdict when
 it’s decided. This streamlines network traffic and reduces unnecessary load on non-voting nodes. The network becomes more efficient
-because messages are routed more intelligently – representatives still discuss and vote, but the “silent bystanders” aren’t flooded
+because messages are routed more intelligently – voters still discuss and vote, but the “silent bystanders” aren’t flooded
 with every whisper. They get to stay in the loop **only when it really matters**, i.e., when a decision (vote result) is finalized.
 
 For a non-technical user, what this means is that **Atto’s network has reduced network requirements**, since those who just want to run
