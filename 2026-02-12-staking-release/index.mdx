@@ -1,114 +1,104 @@
 ---
 slug: staking-is-live
-title: "Staking Is Now Live on Atto"
-description: "Earn passive income by staking your Atto. Learn how to delegate your balance to a voter and start receiving daily rewards."
+title: "Atto staking is live, and your coins stay yours"
+description: "Atto staking is live. Delegate to a voter, earn daily rewards if eligible, and keep your ATTO free to spend."
 authors: [rotilho]
-image: ./image-social.jpg
+image: ../2026-02-13-staking-tutorial/image-social.jpg
 ---
 
 import IdealImage from "@theme/IdealImage";
-import Metric from "@site/src/components/Metric";
-import StakingApySlider from "@site/src/components/StakingApySlider";
-import StakingContent from "@site/src/components/StakingContent";
 
-<IdealImage img={require('./image.jpg')} alt="Banner announcing staking is now live, with a wallet and coin stacks in a yellow palette" />
+<IdealImage
+  img={require('../2026-02-13-staking-tutorial/image.jpg')}
+  alt="Atto staking announcement artwork with a wallet, coin stacks, and yellow background"
+/>
+<br />
+<br />
 
-We're excited to announce that **staking is now live** on the Atto network! This marks a major milestone in our journey toward a fully decentralized, community-driven cryptocurrency.
+Staking is live on Atto.
 
-Starting today, you can earn ATTO passively simply by holding Atto and delegating your balance to a voter of your choice.
+Most staking announcements rush toward the same place: the APY, the dashboard, the idea that coins should sit still and earn.
+
+That is exactly the trap Atto had to avoid.
+
+Atto is supposed to be cash. Digital cash, yes, but still cash in the important sense: it should move when you need it to move. If staking makes people afraid to spend, then staking has quietly worked against the whole point of the network.
+
+So the most important part is simple:
+
+When you stake Atto, your coins stay liquid.
+
+You choose a voter. You delegate your balance. If you stay eligible, you receive daily rewards. But your coins do not leave your wallet, and you do not lock them. If you need to spend ATTO, you spend it.
+
+That is the core design.
 
 <!-- truncate -->
 
-<StakingContent>
+## The trap staking can create
 
-## What Is Staking?
+That design choice matters because staking is now part of how Atto distributes coins.
 
-Staking allows you to earn rewards by helping secure and decentralize the Atto network. When you delegate your balance to a [voter](/explorer/voters), you contribute to the network's consensus mechanism and receive **daily payouts** based on the current APY.
+Atto has a fixed total supply of 18 billion ATTO. Consensus cannot mint more. That gives us a clean monetary base, but it does not answer the harder question.
 
-Unlike traditional proof-of-stake systems that require locking your funds, **Atto's staking keeps your funds fully liquid**—you can spend them anytime. However, the longer you hold, the higher your rewards become, reaching their maximum after 30 days of consistent holding. This creates the perfect balance: complete freedom to use your funds whenever you need them, while rewarding those who choose to hold.
+Who gets the coins?
 
-## Current Rewards
+Every young network has to answer that somehow. Sell too much early and you favor the early buyers. Give too much away and bots show up. Use wasteful mining and you distribute through electricity bills. Keep too much centralized and everyone can see the problem.
 
-The staking APY is dynamic and depends on two factors:
+There is no perfect answer. Atto has been using a mix instead: the [faucet](https://atto.cash/faucet) for newcomers, [Folding@Home rewards](https://atto.cash/docs/mining) for useful computation, [contribution rewards](https://atto.cash/docs/reward-for-contributions) for people improving the ecosystem, and now staking.
 
-1. **Base APY**: Currently at <Metric name="distribution.staking.annual-percentage-yield" suffix="%" />, starting at 200% when circulating supply is low and decreasing as more Atto enters circulation
-2. **GSI Adjustment**: The [Growth Stability Index](/docs/growth-stability-index) (currently <Metric name="distribution.growth-stability-index" suffix="" />) adjusts the effective APY based on market conditions
+Staking is different from those other channels because it connects rewards to voting weight.
 
-**Current effective APY: <Metric name="distribution.staking.annual-percentage-yield.effective" suffix="%" />** (base APY × GSI)
+## Delegation is not custody
 
-<StakingApySlider />
+Atto uses voters to help confirm transactions. When you stake, you pick one of those voters and delegate your balance to it. The wording can sound technical, but the basic idea is simple: your balance helps decide where voting influence goes.
 
-Check the full details on our [staking documentation page](/docs/staking).
+The voter does not receive your coins. You are not giving up custody. You are making a choice.
 
-## How to Start Staking
+That choice matters more than it might seem. Decentralization is not something a network can declare once and then move on. Weight has to spread. More people have to run voters. Holders have to stop drifting toward the same obvious places.
 
-Getting started with staking takes just a few minutes:
+Staking gives normal holders a reason to care about that.
 
-### Step 1: Ensure You Have Enough Atto
+## Crowding should have a cost
 
-You need at least **$10 USD worth** of Atto in your wallet to be eligible for staking rewards.
+There is also a cap. Each voter has a delegation cap of 180 million ATTO. If too much weight piles into one voter, rewards are reduced proportionally for delegators to that voter.
 
-<IdealImage img={require('./wallet-balance.png')} alt="Atto wallet balance" />
+Put simply: the biggest voter is not automatically the best place to go.
 
-### Step 2: Open the Wallet and Navigate to Staking
+That is intentional. Atto's decentralization should not depend only on ideal behavior or perfect information. Incentives should do some of the work. If a voter gets crowded, people have a reason to look elsewhere. Small choices, repeated often enough, start to matter.
 
-Log into your [Atto wallet](https://wallet.atto.cash) and look for the staking or delegation section.
+Rewards still matter.
 
-<IdealImage img={require('./wallet-staking.png')} alt="Wallet staking interface" />
+But rewards are only useful if they do not distort Atto's payment purpose. Atto is meant for payments: a coffee, a tip, a tiny content payment, a machine paying another machine for an API call. Those use cases need money that is available, not money trapped in a staking position because touching it feels like a mistake.
 
-### Step 3: Choose a Voter
+That is why the liquid part is not a small implementation detail. It is the design staying honest.
 
-Browse the list of available voters and select one to delegate your balance to. Consider these factors when choosing:
+## Distribution still has to be careful
 
-- **Share Percentage**: How much of the rewards the voter shares with delegators
-- **Total Delegation**: Voters with lower delegation may offer better reward rates due to the 180M Atto cap
-- **Reliability**: Check when the voter last voted to ensure they're active
+There is another piece that is less exciting but just as important: pace.
 
-You can browse all active voters also on our [voter explorer](/explorer/voters).
+Distribution can hurt a network if it runs ahead of real use. Release coins too slowly and the network stays small. Release them too quickly and new supply can create sell pressure before demand has time to catch up.
 
-<IdealImage img={require('./voter-list.png')} alt="List of available voters" />
+Atto uses the [Growth Stability Index](https://atto.cash/docs/growth-stability-index) to adjust distribution with market conditions. It cannot guarantee a stable price. No mechanism can. Crypto markets are messy, liquidity can change quickly, and demand is outside the protocol's control. But it is better than pretending conditions are always the same.
 
-### Step 4: Delegate Your Balance
+For a currency people are supposed to hold and spend, that matters. Distribution should help confidence, not constantly work against it.
 
-Select your chosen voter and confirm the delegation. Your balance remains fully accessible—you're not locking anything.
+## The practical rules
 
-<IdealImage img={require('./delegation-confirm.png')} alt="Delegation confirmation screen" />
+For eligibility and setup, the practical rules are:
 
-### Step 5: Receive Daily Rewards
+- You need at least $10 worth of ATTO to be eligible for staking rewards.
+- You delegate your balance to a voter.
+- Rewards are paid daily.
+- Your funds are not locked.
+- The current effective APY is shown in the staking docs and wallet, and it can change over time.
+- You need to make at least one transaction every 30 days to remain eligible.
+- You need to open or log into your wallet to receive pending funds, because unreceived funds do not count toward staking balance.
 
-That's it! Rewards are calculated and distributed automatically once per day. Just make sure to:
+Rewards are based on effective balance: the average of your daily balances over the past 30 days, capped at your current balance. In other words, the system does not pretend you still hold coins you already spent.
 
-- **Stay active**: Make at least one transaction every 30 days to remain eligible
-- **Log in regularly**: Open your wallet to receive any pending transactions
+For setup, use the [staking docs](https://atto.cash/docs/staking) or the [step-by-step staking tutorial](https://atto.cash/blog/how-to-stake-atto). To compare voters, use the [voter explorer](https://atto.cash/explorer/voters). If you want to run a voter yourself, start with the [voter hosting guide](https://atto.cash/blog/how-to-host-a-staking-voter).
 
-## Understanding Your Rewards
+A final caveat: staking is not a promise of profit. It does not remove market risk. Rewards, APY, liquidity, and price can change.
 
-### Effective Balance
+Staking gives Atto a way to distribute coins while asking holders to help with something the network needs.
 
-Your rewards are based on your **effective balance**, which is:
-
-- The average of your daily balances over the past 30 days
-- Capped at your current balance
-
-This system rewards consistent holders and prevents gaming by briefly inflating balances.
-
-### Voter Cap
-
-Each voter has a cap of **180 million Atto** in total delegated balance. If a voter exceeds this cap, rewards are proportionally reduced for all delegators. Choosing voters with lower total delegation can maximize your returns.
-
-## Want to Run Your Own Voter?
-
-If you're technically inclined, you can run your own voter node and earn additional rewards. Check out our guide on [how to host a staking voter](/blog/how-to-host-a-staking-voter) for step-by-step instructions.
-
-## Learn More
-
-- [Staking Documentation](/docs/staking) - Full details on how staking works
-- [Voter Explorer](/explorer/voters) - Browse and compare active voters
-- [Growth Stability Index](/docs/growth-stability-index) - Understand how APY is adjusted
-- [How to Host a Staking Voter](/blog/how-to-host-a-staking-voter) - Run your own voter node
-
-Staking represents a key step in Atto's mission to create a truly decentralized, instant, and feeless cryptocurrency. By participating, you're not just earning rewards—you're helping build a more resilient network.
-
-**Start staking today and put your Atto to work!**
-
-</StakingContent>
+It does so without asking Atto to stop behaving like cash.
