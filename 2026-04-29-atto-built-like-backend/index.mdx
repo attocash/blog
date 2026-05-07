@@ -1,10 +1,11 @@
 ---
 slug: atto-built-like-backend
 title: Atto is crypto infrastructure built like backend software
-description: "Why Atto was built with Kotlin, the JVM, Spring Boot, Prometheus metrics, Kotlin Multiplatform, and MySQL: practical digital cash needs boring tools that stay understandable under pressure."
+description: "Why Atto was built with Kotlin, the JVM, Spring Boot, Prometheus, Kotlin Multiplatform, and MySQL: practical digital cash needs boring tools that stay understandable under pressure."
 authors: [rotilho]
 image: ./image-social.jpg
 ---
+
 
 import IdealImage from "@theme/IdealImage";
 
@@ -15,20 +16,20 @@ import IdealImage from "@theme/IdealImage";
 <br />
 <br />
 
-Engineers usually talk about language choice in two ways.
+Engineers usually split into two camps on language choice.
 
-One group says every problem has a correct language. The other says the right language is often the one you can use well when the system is
-under pressure.
+One camp treats every problem as if it has a correct language. The other cares about what you can still understand when the system is under
+pressure.
 
 I am closer to the second camp.
 
-I would not write an embedded kernel in JavaScript, and I would not build a website in C++. Constraints matter. But a
-lot of real software lives in the middle: network services, databases, APIs, queues, state machines, background jobs, observability,
-deployment, and debugging.
+I would not write an embedded kernel in JavaScript, and I would not build a website in C++. Constraints matter. But a lot of real software
+lives in the middle: backend services, stateful systems, network protocols, APIs, queues, background workers, and data pipelines, etc.
 
 A cryptocurrency node sounds exotic from the outside. From the inside, much of it is backend software with stricter consequences.
 
-So Atto leans on familiar backend tools: Kotlin, the JVM, Spring Boot, Prometheus metrics, Kotlin Multiplatform, and MySQL.
+That is why Atto leans on a stack that looks more like practical backend infrastructure than fashionable crypto infrastructure: Kotlin, the
+JVM, Spring Boot, Micrometer, Kotlin Multiplatform, and MySQL.
 
 <!-- truncate -->
 
@@ -39,12 +40,12 @@ So Atto leans on familiar backend tools: Kotlin, the JVM, Spring Boot, Prometheu
 Crypto has its expected wardrobe. Rust looks serious. Go looks practical. C++ looks battle-tested. Kotlin on the JVM still surprises people.
 Sometimes it makes them suspicious before they have read a line of code.
 
-That suspicion is understandable, but it misses an important part of tool choice: the engineers building the system.
+That suspicion is understandable, but it misses a basic part of tool choice: the engineers building the system.
 
-A language never arrives alone. It comes with a runtime, libraries, profilers, database drivers, deployment habits, failure modes, and the
-engineer's ability to reason about all of it when tired.
+A language never arrives alone. It comes with a runtime, libraries, profilers, database drivers, deployment habits, and the
+ability to reason about all of it when tired.
 
-I know Kotlin well. I know the JVM well. That matters.
+I know Kotlin well. I know the JVM well. That mattered.
 
 Atto did not need a stack that looked popular in a crypto debate. It needed a stack that could help build a node, keep protocol rules
 readable, expose useful integration surfaces, and stay debuggable when something broke.
@@ -53,16 +54,16 @@ readable, expose useful integration surfaces, and stay debuggable when something
 
 Atto is instant, feeless digital cash.
 
-The protocol goal is unusual, but much of the implementation work is familiar backend work. A node accepts input from the network. It parses
-messages. It checks signatures. It stores state. It talks to peers. It runs background jobs. It exposes APIs. It streams events. It has to
-start, stop, recover, catch up, and explain what it is doing while something is broken.
+The protocol goal is unusual, but the day-to-day implementation is not all exotic cryptography. A node accepts input from the network,
+validates signatures and account state, stores the result, talks to peers, runs background work, exposes APIs, streams events, survives
+restarts, catches up, and explains what it is doing while something is broken.
 
-In other words, normal service software territory: lifecycle, dependency wiring, health checks, metrics, persistence, APIs, and operations.
+That is normal service software territory: lifecycle, configuration, health checks, metrics, persistence, APIs, and operations.
 
 The difference is the cost of mistakes.
 
-If a web service has a bug, users may see an error page. If a node has the wrong bug, it can become a consensus issue, a broken payment flow,
-a corrupted local view of the ledger, or a bootstrap failure that only appears after hours of syncing.
+In a normal backend, a bad deploy can return 500s, drop jobs, or need a data repair. Painful, but usually contained. In a node, the wrong bug
+can reject valid money, accept invalid state, corrupt the local view of the ledger, or fail bootstrap only after hours of syncing.
 
 That is how I think about Atto's stack. Cryptography is only one piece. A node is a long-running, stateful, networked service with strict
 correctness requirements.
@@ -71,39 +72,38 @@ correctness requirements.
 
 Kotlin was not chosen because it is perfect.
 
-It gave Atto a practical balance: memory safety, readable protocol objects, tooling I know well, a mature runtime, and a concurrency model
-that fits node software.
+It gave Atto a practical balance: safer defaults, tooling I know well, a mature runtime, and a concurrency model
+that fits node software without making the code feel alien.
 
-Null-safety removes a class of ordinary mistakes. Data classes keep protocol primitives readable. Unsigned numbers fit protocol fields
-such as amounts and raw units. Coroutines fit a node because a node is many small asynchronous jobs happening at once.
+Null-safety does not prove correctness, but it removes a class of ordinary mistakes. Data classes keep protocol primitives readable. Unsigned
+numbers fit fields such as amounts and height. Coroutines fit a node because a node is many small asynchronous jobs happening at once.
 
 Could Atto have been written in Rust, Go, Java, C++, or something else? 100%.
 
-But the useful question was not "can another language do this?" The useful question was "which stack gives this implementation the best
-chance of being finished, understood, profiled, operated, and improved?"
+But the useful question was not "can another language do this?" The useful question was "which stack gives this project the best chance of
+being finished, understood, profiled, operated, and improved?"
 
 For me, that answer was Kotlin on the JVM.
 
-## Boring infrastructure is easier to debug
+## Boring infrastructure is easier to operate
 
-The Kotlin choice gets the attention. The quieter bet is the boring backend shelf around it.
+The Kotlin choice gets the attention. The quieter bet is the boring infrastructure around it.
 
-Spring Boot, Micrometer, and MySQL are all familiar, battle-tested pieces of service infrastructure. They give Atto ordinary ways to
-configure services, expose health and metrics, inspect ledger state, back up data, replicate it, recover it, and connect it to other systems.
+Spring Boot, Micrometer, Prometheus, and MySQL are all familiar pieces of software. They give Atto ordinary ways to configure a
+node, expose health checks, inspect ledger state, back up data, replicate it, recover it, and connect it to other systems.
 
-Want to visualize node behavior? Scrape the Prometheus metrics and build a Grafana dashboard.
+Want to see what a node is doing? Scrape Prometheus metrics and build a Grafana dashboard.
 
 Want a transaction stream for projections, analytics, or downstream services? Enable the MySQL binlog and use Debezium to publish changes to
 Kafka.
 
-A custom storage engine would sound more romantic. It would also give integrators one more strange thing to learn.
-
-The less custom plumbing Atto requires, the shorter the path from "I understand the protocol" to "I can put this in my stack."
+A custom storage engine would sound more exciting. It would also give integrators one more strange thing to learn before they can build on
+top of the network.
 
 Boring does not mean careless. Boring means the problems are visible.
 
-When a node is slow, you want to profile it. When bootstrap is stuck, you want metrics. When ledger state looks off, you want to run queries.
-When a database grows, you want ordinary operational paths for monitoring, backup, restore, and replication.
+When a node is slow, you want a profiler. When bootstrap is stuck, you want metrics. When ledger state looks off, you want queries. When a
+database grows, you want ordinary paths for monitoring, backup, restore, and replication.
 
 Those are backend software practices applied to crypto infrastructure.
 
@@ -111,31 +111,31 @@ Those are backend software practices applied to crypto infrastructure.
 
 Kotlin did not make Atto easy.
 
-The first performance decision in Atto was not the programming language. It was the shape of the protocol.
+The first performance decision in Atto was not the programming language. It was the shape of the ledger.
 
 A classical blockchain is easier to reason about in one important sense: there is one chain.
 
 Imagine a single append-only linked list of blocks that carries the global transaction order. Every transaction eventually has to fit into
 that one history. Once a node follows the chain, the order is explicit. There is one book to catch up with.
 
-That model is clean. It is also the main point of contention. Everyone writes to the same shared ledger, so unrelated users still compete for
-the same lane.
+That model is clean. It is also the bottleneck. Everyone writes to the same shared ledger, so unrelated users still compete for the same
+global checkout lane.
 
-Atto moves away from that. Each account has its own chain, like each account keeping its own transaction history. Alice's activity can update
-Alice's chain while Bob's activity updates Bob's chain. When Alice pays Bob, the transfer touches both histories: a send on Alice's side and
-a receive on Bob's side.
+Atto moves away from that by giving each account its own chain. Think of each account keeping its own transaction history. Alice's activity
+can update Alice's chain while Bob's activity updates Bob's chain. When Alice pays Bob, the transfer touches both histories: a send on
+Alice's side and a receive on Bob's side.
 
-That removes the global checkout lane. Transactions do not need to wait for a global block just because other people are using the network at
-the same time.
+That removes the global checkout lane as the normal path. Alice and Bob do not need to wait for one global block just because other people
+are using the network at the same time.
 
-It also changes where the hard parts live.
+But it also changes where the hard parts live.
 
 The network still has to agree on the overall ledger. It still has to prevent conflicting spends. It still has to make many independent
 account histories add up to one coherent state.
 
 That is why bootstrap has been the hardest technical problem so far. A single-chain node catches up with one book. An Atto node catches up
-with many small histories that reference each other. It has to discover missing blocks, resolve dependencies, validate account state, process
-sends and receives in a consistent order, and end up with the same ledger as the rest of the network.
+with many small histories that reference each other. It has to find missing blocks, resolve dependencies, validate account state, process
+sends and receives consistently, and end up with the same ledger as the rest of the network.
 
 No language choice removes that problem.
 
@@ -143,29 +143,27 @@ No language choice removes that problem.
 
 Atto's stack is not a claim that every cryptocurrency should be written in Kotlin.
 
-The claim is smaller and more practical: tool choice should include familiarity, operations, debugging, and the shape of the actual problem.
+The claim is smaller and more practical: tool choice should include operations, debugging, integrations, and the shape of the actual problem.
 
 I keep coming back to leverage. Choose pieces that make Atto easier to run, inspect, integrate, and improve.
 
 You can see it in the choices:
 
-- account chains, so unrelated activity does not queue behind one global chain
-- account snapshots, so validation can start from current account state
-- Kotlin and coroutines, so protocol code and asynchronous flows stay readable
-- Spring Boot and the JVM, because service lifecycle, configuration, Actuator, profiling, and deployment are solved problems
-- Prometheus metrics, because operators already know how to scrape and alert on them
-- MySQL, because ledger state should be inspectable, replicable, and easy to feed into CDC pipelines
-- Kotlin Multiplatform, so wallets, libraries, APIs, integrations, and tools do not all reimplement the same rules
+- Account chains reduce unrelated contention.
+- Account snapshots let validation start from current account state.
+- Kotlin keeps protocol objects and asynchronous flows readable.
+- Spring Boot and the JVM handle lifecycle, configuration, observability, and shipping.
+- Prometheus, Micrometer, and MySQL make node behavior and ledger state inspectable.
+- Kotlin Multiplatform lets wallets, libraries, node software, integrations, and tools share core protocol code.
 
 That stack does not make the protocol simple. It makes the surrounding work less mysterious.
 
 Atto is practical digital cash: instant, feeless, fixed-supply money that can be integrated by developers, operated by node runners, and used
 in small payments where fees would ruin the point.
 
-That needs protocol work. It needs networking work. It needs storage work. It needs wallet work. It needs APIs, docs, monitoring, and
+That needs protocol work. It needs networking work. It needs storage work. It needs wallet work. It also needs APIs, docs, monitoring, and
 boring infrastructure that can be understood when something goes wrong.
 
-Kotlin, the JVM, Spring Boot, Prometheus metrics, Kotlin Multiplatform, and MySQL fit that kind of work.
+Kotlin, the JVM, Spring Boot, Prometheus, Kotlin Multiplatform, and MySQL fit that kind of work.
 
-Atto is unusual where the protocol needs to be unusual. Around that, it should feel familiar to the people who have to build on it, run it,
-and debug it.
+Atto is unusual where the protocol needs to be unusual. Around that, boring is a feature.
