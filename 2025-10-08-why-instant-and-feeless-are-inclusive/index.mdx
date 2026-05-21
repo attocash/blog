@@ -50,9 +50,10 @@ spreadsheet problem before the product even starts.
 Imagine a packed metro queue at rush hour: Sao Paulo, Tokyo, Paris. Five silent seconds at the turnstile feels much
 longer when the line behind you is moving. Online, a couple of seconds can be acceptable. In person, it often is not.
 
-Atto's recent seven-day confirmation range is about <Metric name="network.confirmation-time.ms.seven-day-p50" />-<Metric
-name="network.confirmation-time.ms.seven-day-p95" /> milliseconds. That is fast enough to feel immediate in the places
-where waiting breaks the experience: transit, point-of-sale, games, wallet-to-wallet payments, and API-driven systems.
+Atto's typical confirmation time is currently about <a href="/metrics#confirmation-speed"><Metric
+name="network.confirmation-time.ms.seven-day-p50" precision={0} suffix=" ms" /></a>. The practical point is simple: it
+feels immediate in the places where waiting breaks the experience, such as transit, point-of-sale, games,
+wallet-to-wallet payments, and API-driven systems.
 
 Machines make the same point in a less visible way. If an app, device, or agent is paying for one data request at a
 time, it cannot wait days for card settlement and it cannot pay a card-style fee on each request. The exact price may be
