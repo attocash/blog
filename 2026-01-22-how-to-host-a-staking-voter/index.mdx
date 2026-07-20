@@ -1,7 +1,7 @@
 ---
 slug: how-to-host-a-staking-voter
 title: "How To Host A Staking Voter"
-description: "Learn how to set up a voter node and become eligible for voter rewards. Zero Linux experience required."
+description: "Learn how to set up an Atto voter node and request staking-reward registration. Zero Linux experience required."
 authors: [waldolemmer]
 image: ./image-social.jpg
 ---
@@ -16,13 +16,16 @@ import React from 'react';
 <br />
 <br />
 
-Atto relies on countless voter nodes across the world for its speed and decentralization. To this end, Atto rewards nodes that participate
-in voting as part of its [distribution](/docs/distribution).
+Atto relies on voter nodes across the world to participate in ORV and help keep transaction confirmation responsive and decentralized. A
+separate [distribution policy](/docs/distribution) may reward eligible voter operators.
+
+**Voter rewards are separate from ORV consensus. Operating or registering a node does not by itself establish reward eligibility; current
+scoring, sharing, and payment rules determine whether a payout address may receive variable rewards.**
 
 <!-- TODO: Update when node scoring is implemented -->
 Thanks to its lightweight design, a voter can be hosted on all but the oldest and lightest of servers, and on almost any computer/laptop you
-may have laying around. Nodes hosted on higher-end hardware, however, improve network speed and will receive greater scores and rewards at a
-later stage of the staking system.
+may have lying around. Higher-end hardware can improve network performance. A planned scoring model may later take performance into account,
+but current reward eligibility follows the published rules.
 
 This guide explains the process of setting up a voter. <!-- truncate -->Readers that have a fresh, working installation of Linux can skip
 the next section to [Securing the Server](/blog/how-to-host-a-staking-voter#securing-the-server), while readers who have already set up secure remote login and a user
@@ -46,8 +49,8 @@ If you're going for a private server, you need to select a private server provid
 
 ### Choosing a Private Server Provider
 
-Different providers have servers in different locations, although some may have servers within the same city or datacenter. In order to
-promote homogeneity in the hopes of improved network performance, the following providers are listed in a random order:
+Different providers have servers in different locations, although some may have servers within the same city or datacenter. To promote
+provider and geographic diversity, the following providers are listed in a random order:
 
 export const RandomList = ({items}) => {
   const [randomized, setRandomized] = React.useState([]);
@@ -122,7 +125,7 @@ ssh <username>@<IP address>
 
 For example, if the username is "root" (or not provided) and the IP address is 123.45.67.89, type `ssh root@123.45.67.89` and press enter.
 
-If this is your first time connecting to this server, you will see a warning about the authenticity of the host. Simpy write "yes" and press
+If this is your first time connecting to this server, you will see a warning about the authenticity of the host. Simply write "yes" and press
 enter.
 
 Now you are logged in and should see a prompt ending with `#` (for the root user) or `$` (for a regular user) on the last line. Your next
@@ -405,7 +408,7 @@ Run `docker logs -f atto-voter-node-node-1`. This may take a while if you don't 
 
 Inspect the logs to determine if your node is still connected to other nodes.
 
-### Checking for Unchecked Transactions.
+### Checking for Unchecked Transactions
 
 Your node should have zero unchecked transactions at all times, except when bootstrapping (when first setting it up or after some downtime).
 To check, log into the node's database (as explained before) and run `SELECT COUNT(*) FROM unchecked_transaction;`.
@@ -420,11 +423,11 @@ To update the node's Docker Image:
 2. Run `docker compose pull` to download updates for all images used by the project, and `docker compose up -d` to restart the containers
    for which there were any updates.
 
-Now that you know how to maintain your node, you are ready to register it (and yourself) to become a staking voter.
+Now that you know how to maintain your node, you are ready to request registration as a staking voter.
 
 ## Registering for Staking
 
-In order to register for staking, you need to add information about yourself and your node to the known-addresses GitHub repository. The
+To request staking registration, you need to add information about yourself and your node to the known-addresses GitHub repository. The
 information about you is required to verify your authenticity in the future so that no one else may make changes to your voter's details
 such as the payout address or the percentage shared with your delegates.
 
@@ -486,4 +489,4 @@ finished bootstrapping and is experiencing no errors by checking the node's log 
 
 ---
 
-Your computer is now helping to secure Atto's network and speed—and earning Atto as a reward. Thank you for making a difference!
+Your computer is now operating an Atto voter and participating in ORV. Thank you for making a difference!

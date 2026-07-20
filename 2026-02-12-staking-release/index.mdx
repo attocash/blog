@@ -1,7 +1,7 @@
 ---
 slug: staking-is-live
 title: "Atto staking is live, and your coins stay yours"
-description: "Atto staking is live. Delegate to a voter, earn daily rewards if eligible, and keep your ATTO free to spend."
+description: "Atto staking is live. Delegate to a voter, keep your ATTO free to spend, and check whether you are eligible for variable rewards."
 authors: [rotilho]
 image: ./image-social.jpg
 ---
@@ -27,9 +27,11 @@ So the most important part is simple:
 
 When you stake Atto, your coins stay liquid.
 
-You choose a voter. You delegate your balance. If you stay eligible, you receive daily rewards. But your coins do not leave your wallet, and you do not lock them. If you need to spend ATTO, you spend it.
+You choose a voter. You delegate your balance. Under current rules, an eligible account may receive variable rewards, generally distributed daily. But your coins do not leave your wallet, and you do not lock them. If you need to spend ATTO, you spend it.
 
 That is the core design.
+
+**Staking rewards are variable and subject to current eligibility and distribution rules. APY is an estimate rather than a fixed return, and ATTO's market value and liquidity can change.**
 
 <!-- truncate -->
 
@@ -45,13 +47,13 @@ Every young network has to answer that somehow. Sell too much early and you favo
 
 There is no perfect answer. Atto has been using a mix instead: the [faucet](https://atto.cash/faucet) for newcomers, [Folding@Home rewards](https://atto.cash/docs/mining) for useful computation, [contribution rewards](https://atto.cash/contributions) for people improving the ecosystem, and now staking.
 
-Staking is different from those other channels because it connects rewards to voting weight.
+Staking is different from those other channels because rewards are calculated from delegated balances. Delegation separately assigns ORV voting weight; rewards are a distribution policy, not part of transaction confirmation.
 
 ## Delegation is not custody
 
-Atto uses voters to help confirm transactions. When you stake, you pick one of those voters and delegate your balance to it. The wording can sound technical, but the basic idea is simple: your balance helps decide where voting influence goes.
+Atto uses voters to confirm transactions through Open Representative Voting (ORV). When you stake, you pick one of those voters and assign your balance's voting weight to it. The wording can sound technical, but the basic idea is simple: your balance helps decide where voting influence goes.
 
-The voter does not receive your coins. You are not giving up custody. You are making a choice.
+The voter does not receive your coins. You are not giving up custody. Delegation also does not give the voter a role in Atto's company governance, treasury, roadmap, or reward-policy decisions.
 
 That choice matters more than it might seem. Decentralization is not something a network can declare once and then move on. Weight has to spread. More people have to run voters. Holders have to stop drifting toward the same obvious places.
 
@@ -59,7 +61,7 @@ Staking gives normal holders a reason to care about that.
 
 ## Crowding should have a cost
 
-There is also a cap. Each voter has a delegation cap of 180 million ATTO. If too much weight piles into one voter, rewards are reduced proportionally for delegators to that voter.
+Under current rules, each voter has a delegation cap of 180 million ATTO. If too much weight piles into one voter, rewards are reduced proportionally for delegators to that voter.
 
 Put simply: the biggest voter is not automatically the best place to go.
 
@@ -77,28 +79,24 @@ There is another piece that is less exciting but just as important: pace.
 
 Distribution can hurt a network if it runs ahead of real use. Release coins too slowly and the network stays small. Release them too quickly and new supply can create sell pressure before demand has time to catch up.
 
-Atto uses the [Growth Stability Index](https://atto.cash/docs/growth-stability-index) to adjust distribution with market conditions. It cannot guarantee a stable price. No mechanism can. Crypto markets are messy, liquidity can change quickly, and demand is outside the protocol's control. But it is better than pretending conditions are always the same.
+Atto's published [Growth Stability Index design](https://atto.cash/docs/growth-stability-index) adjusts covered distribution rates using market data. Current programme mappings, settings, and cadence require confirmation from operational records. The design does not target or protect a particular ATTO price.
 
 For a currency people are supposed to hold and spend, that matters. Distribution should help confidence, not constantly work against it.
 
 ## The practical rules
 
-For eligibility and setup, the practical rules are:
+For eligibility and setup, the current practical rules are:
 
-- You need at least $10 worth of ATTO to be eligible for staking rewards.
+- You currently need at least $10 worth of ATTO to be eligible for staking rewards.
 - You delegate your balance to a voter.
-- Rewards are paid daily.
+- Eligible rewards are generally calculated and distributed daily.
 - Your funds are not locked.
 - The current effective APY is shown in the staking docs and wallet, and it can change over time.
 - You need to make at least one transaction every 30 days to remain eligible.
 - You need to open or log into your wallet to receive pending funds, because unreceived funds do not count toward staking balance.
 
-Rewards are based on effective balance: the average of your daily balances over the past 30 days, capped at your current balance. In other words, the system does not pretend you still hold coins you already spent.
+Eligible rewards are based on effective balance: the average of your daily balances over the past 30 days, capped at your current balance. In other words, the system does not pretend you still hold coins you already spent.
 
 For setup, use the [staking docs](https://atto.cash/docs/staking) or the [step-by-step staking tutorial](https://atto.cash/blog/how-to-stake-atto). To compare voters, use the [voter explorer](https://atto.cash/explorer/voters). If you want to run a voter yourself, start with the [voter hosting guide](https://atto.cash/blog/how-to-host-a-staking-voter).
 
-A final caveat: staking is not a promise of profit. It does not remove market risk. Rewards, APY, liquidity, and price can change.
-
-Staking gives Atto a way to distribute coins while asking holders to help with something the network needs.
-
-It does so without asking Atto to stop behaving like cash.
+Staking is a liquid delegation and distribution route. ORV voting confirms transactions; the separate reward policy determines whether an eligible account receives rewards. It does so without asking Atto to stop behaving like cash.
