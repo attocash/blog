@@ -1,7 +1,7 @@
 ---
 slug: how-to-stake-atto
 title: "How To Stake Atto"
-description: "A step-by-step tutorial for staking Atto, choosing a voter, delegating your balance, and receiving daily rewards."
+description: "A step-by-step tutorial for staking Atto, choosing a voter, delegating your balance, and checking eligibility for variable rewards."
 authors: [rotilho]
 ---
 
@@ -12,7 +12,7 @@ import StakingContent from "@site/src/components/StakingContent";
 
 This tutorial walks through how to stake Atto from the wallet.
 
-Staking lets you earn daily rewards by delegating your balance to a voter. Your funds stay liquid, so you can still spend them whenever you need to.
+Staking lets you delegate your balance to a voter while keeping your funds liquid. If your account meets the current rules, it may receive variable rewards while remaining free to spend.
 
 <!-- truncate -->
 
@@ -20,18 +20,20 @@ Staking lets you earn daily rewards by delegating your balance to a voter. Your 
 
 ## What Is Staking?
 
-Staking allows you to earn rewards by helping secure and decentralize the Atto network. When you delegate your balance to a [voter](/explorer/voters), you contribute to the network's consensus mechanism and receive **daily payouts** based on the current APY.
+In Atto's wallet, staking means assigning your account's voting weight to a [voter](/explorer/voters). ORV voting confirms transactions; eligible accounts may separately receive variable rewards under the current distribution rules.
 
-Unlike traditional proof-of-stake systems that require locking your funds, **Atto's staking keeps your funds fully liquid**—you can spend them anytime. However, the longer you hold, the higher your rewards become, reaching their maximum after 30 days of consistent holding. This creates the perfect balance: complete freedom to use your funds whenever you need them, while rewarding those who choose to hold.
+**Atto's staking keeps your funds fully liquid**—you can spend them anytime. Eligible rewards use a 30-day effective-balance window, so recent balances affect the calculation without locking your coins.
 
-## Current Rewards
+## Reward figures
 
-The staking APY is dynamic and depends on two factors:
+The calculation uses two figures:
 
-1. **Base APY**: Currently at <Metric name="distribution.staking.annual-percentage-yield" suffix="%" />, starting at 200% when circulating supply is low and decreasing as more Atto enters circulation
-2. **GSI Adjustment**: The [Growth Stability Index](/docs/growth-stability-index) (currently <Metric name="distribution.growth-stability-index" suffix="" />) adjusts the effective APY based on market conditions
+1. **Base programme APY**: <Metric name="distribution.staking.annual-percentage-yield" suffix="%" />
+2. **GSI input**: <Metric name="distribution.growth-stability-index" suffix="" /> from the [Growth Stability Index](/docs/growth-stability-index)
 
-**Current effective APY: <Metric name="distribution.staking.annual-percentage-yield.effective" suffix="%" />** (base APY × GSI)
+**Effective programme APY: <Metric name="distribution.staking.annual-percentage-yield.effective" suffix="%" />** (base programme APY × GSI), before the selected voter's delegator share and any cap-related reduction. An eligible account's rate may therefore be lower.
+
+**These programme figures are not a promised user return. Eligibility, rates, timing, voter sharing, and cap effects follow the current rules, and ATTO's market value may fall.**
 
 <StakingApySlider />
 
@@ -43,7 +45,7 @@ Getting started with staking takes just a few minutes:
 
 ### Step 1: Ensure You Have Enough Atto
 
-You need at least **$10 USD worth** of Atto in your wallet to be eligible for staking rewards.
+Under current rules, you need at least **$10 USD worth** of Atto in your wallet to be eligible for staking rewards.
 
 <IdealImage className="block mx-auto"  img={require('./wallet-balance.png')} alt="Atto wallet balance" />
 
@@ -61,7 +63,7 @@ Browse the list of available voters and select one to delegate your balance to. 
 - **Total Delegation**: Voters with lower delegation may offer better reward rates due to the 180M Atto cap
 - **Reliability**: Check when the voter last voted to ensure they're active
 
-You can browse all active voters also on our [voter explorer](/explorer/voters).
+You can also browse active voters in our [voter explorer](/explorer/voters).
 
 <IdealImage className="block mx-auto"  img={require('./voter-list.png')} alt="List of available voters" />
 
@@ -71,9 +73,9 @@ Select your chosen voter and confirm the delegation. Your balance remains fully 
 
 <IdealImage className="block mx-auto" img={require('./delegation-confirm.png')} alt="Delegation confirmation screen" />
 
-### Step 5: Receive Daily Rewards
+### Step 5: Receive Eligible Rewards
 
-That's it! Rewards are calculated and distributed automatically once per day. Just make sure to:
+That's it! Under current rules, eligible rewards are normally calculated and distributed once per day. Just make sure to:
 
 - **Stay active**: Make at least one transaction every 30 days to remain eligible
 - **Log in regularly**: Open your wallet to receive any pending transactions
@@ -82,7 +84,7 @@ That's it! Rewards are calculated and distributed automatically once per day. Ju
 
 ### Effective Balance
 
-Your rewards are based on your **effective balance**, which is:
+Eligible rewards are based on your **effective balance**, which is:
 
 - The average of your daily balances over the past 30 days
 - Capped at your current balance
@@ -91,21 +93,21 @@ This system rewards consistent holders and prevents gaming by briefly inflating 
 
 ### Voter Cap
 
-Each voter has a cap of **180 million Atto** in total delegated balance. If a voter exceeds this cap, rewards are proportionally reduced for all delegators. Choosing voters with lower total delegation can maximize your returns.
+Under current rules, each voter has a cap of **180 million Atto** in total delegated balance. If a voter exceeds this cap, rewards are proportionally reduced for its delegators, so total delegation can affect the variable reward calculation.
 
 ## Want to Run Your Own Voter?
 
-If you're technically inclined, you can run your own voter node and earn additional rewards. Check out our guide on [how to host a staking voter](/blog/how-to-host-a-staking-voter) for step-by-step instructions.
+If you're technically inclined, you can run your own voter node and request registration for voter rewards. Operating a node is distinct from reward eligibility; see [how to host a staking voter](/blog/how-to-host-a-staking-voter) for the setup and registration steps.
 
 ## Learn More
 
 - [Why Staking Matters for Atto](/blog/staking-is-live) - Distribution and digital-cash context
 - [Staking Documentation](/docs/staking) - Full details on how staking works
 - [Voter Explorer](/explorer/voters) - Browse and compare active voters
-- [Growth Stability Index](/docs/growth-stability-index) - Understand how APY is adjusted
+- [Growth Stability Index](/docs/growth-stability-index) - See how GSI adjusts distribution rates
 - [How to Host a Staking Voter](/blog/how-to-host-a-staking-voter) - Run your own voter node
 
-Staking is one step on Atto's path toward broader decentralization. By participating, you earn rewards while helping build a more resilient network.
+Staking combines liquid delegation with a separate distribution route. If your account is eligible, it may receive variable rewards while you keep control of your funds.
 
 When you're ready, choose an active voter and delegate from the wallet.
 
