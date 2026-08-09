@@ -23,9 +23,10 @@ separate [distribution policy](/docs/distribution) may reward eligible voter ope
 scoring, sharing, and payment rules determine whether a payout address may receive variable rewards.**
 
 <!-- TODO: Update when node scoring is implemented -->
-Thanks to its lightweight design, a voter can be hosted on all but the oldest and lightest of servers, and on almost any computer/laptop you
-may have lying around. Higher-end hardware can improve network performance. A planned scoring model may later take performance into account,
-but current reward eligibility follows the published rules.
+Thanks to its lightweight design, a voter can run on modest hardware. When the node and MySQL share a host, use at least 2 GB of physical
+RAM for both bootstrap and continued operation. A synchronized installation may sometimes run with 1 GB, but that is not recommended.
+Higher-end hardware can improve network performance. A planned scoring model may later take performance into account, but current reward
+eligibility follows the published rules.
 
 This guide explains the process of setting up a voter. <!-- truncate -->Readers that have a fresh, working installation of Linux can skip
 the next section to [Securing the Server](/blog/how-to-host-a-staking-voter#securing-the-server), while readers who have already set up secure remote login and a user
@@ -83,7 +84,12 @@ export const RandomList = ({items}) => {
   { name: 'Hostinger', url: 'https://www.hostinger.com/pricing/vps-hosting#pricing' }
 ]} />
 
-You should pick one of these and follow the link. You will be presented with a series of plans. The next section will guide your decision.
+:::info
+These providers are examples, not a compatibility list. You can use another provider if it offers an AMD64 (`x86_64`) Linux VPS that can
+run Docker, meets the requirements below, and permits this type of node under its terms of service.
+:::
+
+Choose a provider and plan that meets these requirements. The next section will guide your decision.
 
 ### Choosing a Plan
 
@@ -93,9 +99,9 @@ cheaper and are adequate for hosting a node.
 Among VPSes, some providers offer both KVM (virtualized) and LXC (containerized) VPSes. LXC servers are unsupported because the Atto node is
 released as a Docker container, which cannot run in an already containerized environment.
 
-You will be given several options for the allocated hardware. The following recommendations are above the minimum requirements and ensure a
-smoothly functioning network:
+You will be given several options for the allocated hardware. Choose a plan that meets the following requirements and recommendations:
 
+- **Architecture**: AMD64 (`x86_64`)
 - **Storage**: 10 GB or greater SSD or NVMe SSD
 - **RAM**: 2 GB or greater
 
@@ -108,35 +114,24 @@ with your new server's management interface.
 
 Now that you have a server, navigate to its console/dashboard (if you're not already there) and start your server.
 
-Most providers provide a VNC / remote desktop portal through which you can log into your node as a last resort. In general, however, you'll
-want to log in using SSH.
+Every provider listed above offers console access: [noez.de](https://community.noez.de/t/how-can-i-start-a-novnc-session-with-my-vps/1613)
+and [Vultr](https://docs.vultr.com/vultr-web-console-faq) provide browser-based noVNC consoles,
+[DigitalOcean](https://docs.digitalocean.com/products/droplets/how-to/connect-with-console/) provides browser and recovery consoles,
+[Linode](https://techdocs.akamai.com/cloud-computing/docs/access-your-system-console-using-lish) provides its browser-based Lish console,
+and [Hostinger](https://www.hostinger.com/support/7978544-how-to-use-the-browser-terminal-in-hostinger/) provides a browser terminal.
+[Contabo](https://help.contabo.com/en/support/solutions/articles/103000407800-how-to-connect-to-your-server-using-vnc) provides VNC access,
+but requires a separate VNC client. You can use these options for the initial setup and recovery.
 
-Your provider's console should provide three key bits of information:
-- The IP address (e.g. 123.45.67.89) or domain name (e.g. vps123.example.com)
-- The username (assume "root" if not given)
-- The password
+SSH is more convenient for regular administration, but making it reachable from the public internet exposes another login service that you
+must protect. If you enable it, prefer key-based authentication and restrict access to your IP address using the provider's firewall. The
+provider's instructions will explain how to configure it safely.
 
-With this, you can open Windows Terminal (in Windows 11), Command Prompt (Windows 10 or earlier) or other terminal software (found by
-searching for "terminal" on most operating systems) and run the following command to log into your server:
-
-```bash
-ssh <username>@<IP address>
-```
-
-For example, if the username is "root" (or not provided) and the IP address is 123.45.67.89, type `ssh root@123.45.67.89` and press enter.
-
-If this is your first time connecting to this server, you will see a warning about the authenticity of the host. Simply write "yes" and press
-enter.
-
-Now you are logged in and should see a prompt ending with `#` (for the root user) or `$` (for a regular user) on the last line. Your next
-step is to ensure that no one else can log in.
+Open the provider's console and authenticate if prompted. You should see a prompt ending with `#` (for the root user) or `$` (for a regular
+user) on the last line. Your next step is to complete the basic server setup.
 
 ## Securing the Server
 
-A new server may allow remote login via the root user and will use a standard SSH port (22). These open up the doors for simple automated
-attacks from all over the internet to try and guess your password.
-
-The following sections will help you to secure your server to avoid it being overtaken or your private key (discussed later) being stolen.
+Security and firewall controls vary by provider. Follow your provider's guidance before storing a voter private key on the server.
 
 ### Creating a Non-Root User
 
@@ -148,7 +143,7 @@ chosen username.
 
 ```bash
 adduser <username>
-gpasswd -a -G <username> sudo
+usermod -aG sudo <username>
 ```
 
 For example, `adduser waldo` will create a new user named "waldo" and ask you to create a new password.
@@ -157,39 +152,15 @@ For example, `adduser waldo` will create a new user named "waldo" and ask you to
 password. A sequence of four or more randomly generated words is recommended, as this is [hard to
 guess](https://explainxkcd.com/wiki/index.php/936:_Password_Strength) but easy to remember.
 
-In the case of a server, to test your username and password (to avoid locking yourself out), open a new Windows Terminal, Command Prompt or
-other terminal window and run `ssh <username>@<IP address>` and enter your new password. Then run `sudo echo 'sudo works!'` to test if sudo
-works. If you don't see any errors, you've successfully added the new user and should stop using root. You can now close the old terminal
-window.
-
-### Securing SSH
-
-To configure SSH, start editing a new config file with `nano`. This command is run with `sudo` because this file is under the /etc/
-directory, which can only be modified by root:
+Before ending the root session, switch to the new user and test that `sudo` works:
 
 ```bash
-sudo nano /etc/ssh/sshd_config.d/port-and-nonroot.conf
+su - <username>
+sudo echo 'sudo works!'
 ```
 
-Pick a random port number between 49152 and 65535, and enter the following (replacing `<port>` with your chosen port) to tell SSH to use
-this port instead of 22 and to disable password-based root login now that you have an unprivileged user.
-
-```
-Port <port>
-PermitRootLogin prohibit-password
-```
-
-The bottom of the screen shows how to exit nano. Press Ctrl+X. To apply the configuration, run the following two commands:
-
-```
-sudo systemctl daemon-reload
-sudo systemctl restart ssh.socket
-```
-
-If the terminal hangs after the first command, open a new terminal and log in with `ssh <username>@<IP address>`.
-
-After running the second command, logging into your server will require running `ssh -p <port> <username>@<IP address>`. Now, as long as
-your password is strong, your system is secured against unauthorized login attempts.
+Enter the new user's password if prompted. If you see `sudo works!`, the account is ready and you should stop running routine commands as
+root. If the provider's console automatically logs in as root, run `su - <username>` before continuing.
 
 ### Updating the System
 
@@ -228,21 +199,22 @@ Now that your server is secure, you can set up the node.
 
 ## Running the Node
 
-Setting up the node involves setting up a project directory, creating the docker-compose.yml file, installing Docker and Docker Compose, and
+Setting up the node involves setting up a project directory, creating the `.env` and `compose.yaml` files, installing Docker and Docker Compose, and
 starting the containers.
 
-When creating the docker-compose.yml file, you will need to configure the private key that your node will use to sign its votes and derive
+When creating the configuration files, you will need to configure the private key that your node will use to sign its votes and derive
 its address.
 
 ### Generating a Private Key
 
-Generate a random byte sequence (which qualifies as a private key) by running `openssl rand -hex 32` and copying the result.
+Generate a random byte sequence (which qualifies as a private key) by running `openssl rand -hex 32` and copying the result. Generate a
+visibly different MySQL password with `printf 'mysql_%s\n' "$(openssl rand -hex 24)"`.
 
-:::warning
+:::danger
 Store this key safely and do not share it with anyone, as it can be used to impersonate your node.
 :::
 
-Now that you have a private key, you can create the docker-compose.yml file, which will tell Docker Compose what containers to spawn.
+Now that you have a private key and database password, you can create the files that tell Docker Compose what containers to spawn.
 
 ### Setting Up the Project Directory
 
@@ -252,31 +224,17 @@ Run the following commands on your server from a terminal:
 cd ~/                   # Navigate to your user's home directory. Your working directory is now ~/.
 mkdir atto-voter-node   # Make a new directory inside your working directory.
 cd atto-voter-node/     # Navigate to the new directory. Your working directory is now ~/atto-voter-node/.
-nano docker-compose.yml # Create and edit ~/atto-voter-node/docker-compose.yml.
+touch .env compose.yaml
+printf '.env\n' > .gitignore
+chmod 600 .env
 ```
 
-Paste the [Docker example for a voter node with a direct private
-key](/docs/integration/node#example-1-voter-node-with-direct-private-key-1).
+Follow the [Docker example for a voter node with a direct private key](/docs/integration/node/docker#voter-with-a-direct-private-key).
+Put the generated database password, private key, and public URI in `.env`; keep the image, memory limits, ports, and other settings in
+`compose.yaml`. Replace the `.invalid` hostname with your server's public hostname, or use `ws://<IP address>:8082` when the gossip port is
+not behind TLS termination.
 
-```yml
-# docker-compose.yml
-services:
-
-# ... rest of the example ...
-```
-
-Replace `atto.example.com` after ATTO\_PUBLIC\_URI with your server's IP address. If your server is a computer that you're physically working on, you can find its
-IP address at [whatismyip.com](https://www.whatismyip.com/). Also replace `wss://` with `ws://`, unless you'll be TLS-terminating the gossip
-port, for example using Tailscale Funnel.
-
-Replace `{your chosen private key}` (the curly braces as well) with the private key you copied and stored safely.
-
-:::warning
-When backing up your docker-compose.yml file or your server, do not share the backup with anyone, as it contains the private key which can
-be used to impersonate your node.
-:::
-
-This file will be read by Docker Compose, but you need to install Docker and Docker Compose first.
+These files will be read by Docker Compose, but you need to install Docker and Docker Compose first.
 
 ### Installing Docker and the Docker Compose Plugin
 
@@ -286,7 +244,7 @@ apt install` yet. To fix this, add Docker's repository to apt by running the fol
 ```bash
 # Add Docker's official GPG key:
 sudo apt update
-sudo apt install ca-certificates curl
+sudo apt install ca-certificates curl jq
 sudo install -m 0755 -d /etc/apt/keyrings
 sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
 sudo chmod a+r /etc/apt/keyrings/docker.asc
@@ -312,29 +270,13 @@ documentation](https://docs.docker.com/engine/install/ubuntu/#install-using-the-
 
 Before you can start the node, you need to make sure it has enough memory.
 
-### Adding a Swapfile
+### Checking Available Memory
 
-A swapfile is used as extra virtual memory when the system runs out of RAM. Because swapfiles are on the disk, they are much slower than
-actual RAM, which is why it was important to choose a server with enough RAM.
-
-To check if you need a swapfile, run `free -h`. If the amount of free memory + free swap adds up to less than 2 GiB (2048 MiB), you need a
-swapfile in order to run the node. Run the following commands one at a time.
-
-```bash
-sudo fallocate -l 2G /swapfile # Create a contiguous, empty 2GiB file called "swapfile" in the / directory
-sudo chmod 0600 /swapfile      # Ensure only the file owner (root) can use the swapfile
-sudo mkswap /swapfile          # Format the swapfile
-sudo swapon /swapfile          # Enable the swapfile (until the next reboot)
-```
-
-To ensure that the changes stick, you need to ensure that it's mounted on boot. Start editing the fstab file with `sudo nano /etc/fstab`
-and add the following line anywhere in the file:
-
-```
-/swapfile none swap sw 0 0
-```
-
-Now that you have enough swap (verify with `free -h`), you can run the node.
+Run `free -h` and confirm that the server has about 2 GB of physical RAM. A 2 GB plan usually appears as roughly 1.9 GiB in this output.
+This is a whole-server requirement, not the node process's requirement: the Compose configuration limits the node to 1 GB but does not
+hard-cap MySQL, because a 512 MB database limit can cause a fresh bootstrap to fail. Do not count swap toward this requirement: under
+bootstrap load, swapping can turn memory pressure into long disk stalls. A host swapfile may remain as an emergency safeguard, but the
+containers are configured to avoid using it.
 
 ### Starting the node
 
@@ -344,50 +286,80 @@ First ensure that you have permission to interact with Docker:
 sudo gpasswd -a <username> docker
 ```
 
+Membership in the `docker` group grants root-level control of the host. Add only the trusted account that will operate the node.
+
 Then log out with Ctrl+D and log back in.
 
-Ensure you're in the `atto-voter-node` project directory you created and tell Docker to read the `docker-compose.yml` file in the current
+Before starting the node, allow inbound TCP port 8082 in your provider's network firewall and the server's host firewall. Keep ports 8080
+and 8081 closed to the internet. Publishing the port in Docker Compose does not bypass either firewall.
+
+Ensure you're in the `atto-voter-node` project directory you created and tell Docker to read the `compose.yaml` file in the current
 directory and start the containers in the background:
 
 ```
 cd ~/atto-voter-node
-docker compose up -d
+if docker compose config --quiet; then
+  echo "Compose configuration: valid"
+  docker compose up -d
+  docker compose ps
+else
+  echo "Compose configuration: invalid"
+fi
 ```
 
 Docker will download the images and start the two containers: The node, which participates in the network, and the MySQL database, where
-the node stores all transactions.
+the node stores all transactions. The node waits until MySQL accepts the configured credentials before starting.
 
 Because the containers are started in the background, you can't tell whether they are running successfully yet. The next section provides
 you with the tools needed to inspect your node and make sure it's operating correctly.
 
 ### Verifying that the node is running
 
-You can verify the node's activities by following the `node` container's logs. First check the `NAME` of the node's container (not the mysql
-container) with `docker ps`.
+First check the node's health, then follow its activities in the log:
 
-It will likely be called `atto-voter-node-node-1`. Start following the latest log messages with `docker logs -f atto-voter-node-node-1`. You
-should see messages like "Saved X unchecked transactions" and "Resolved X unchecked transactions", which indicate that the node is
+```bash
+if [ "$(curl --silent --show-error --output /dev/null --write-out '%{http_code}' http://127.0.0.1:8081/health)" = "200" ]; then
+  echo "Node health: healthy"
+else
+  echo "Node health: not healthy"
+fi
+docker compose logs --tail 200 -f node
+```
+
+You should see messages like "Saved X unchecked transactions" and "Resolved X unchecked transactions", which indicate that the node is
 bootstrapping.
 
 Stop following the log by interrupting the currently running command with Ctrl+C.
 
-**Bootstrapping** means that your node is downloading a full history of all transactions on the network. You can check its progress by
-seeing how many transactions it has resolved:
+**Bootstrapping** means that your node is downloading a full history of all transactions on the network. Check its progress with:
 
-1. Check the name of the mysql container with `docker ps`, then run the `mysql` command *inside* it with `docker exec -it
-   atto-voter-node-node-mysql-1 mysql -u <username> -p`, where `<username>` should be replaced with the value of ATTO\_DB\_USER above, which
-   is `root` if you didn't change it.
-2. Enter the password, which is `root` if you didn't change ATTO\_DB\_PASSWORD.
-3. Select the node database with `USE <database>`, where `<database>` is `node` if you didn't change ATTO\_DB\_NAME.
-4. Finally, sum up the `height`s of all accounts in the `account` table, which gives you the number of resolved transactions, with `SELECT
-   SUM(height) FROM account;`. Don't forget the semicolon.
-5. Press Ctrl+D to exit the MySQL monitor.
+```bash
+{
+  local_height=$(curl -fsSL http://127.0.0.1:8081/metrics/account.height.count \
+    | jq -r '.measurements[] | select(.statistic == "VALUE") | (.value | floor)') &&
+  public_height=$(curl -fsSL https://gatekeeper.live.application.atto.cash/projections/metrics \
+    | jq -r '.metrics[] | select(.name == "account.height.count") | .value') &&
+  unchecked=$(docker compose exec -T node-mysql sh -c \
+    'MYSQL_PWD="$MYSQL_PASSWORD" mysql --batch --skip-column-names \
+    -u"$MYSQL_USER" "$MYSQL_DATABASE" -e "SELECT COUNT(*) FROM unchecked_transaction;"') &&
+  progress=$(awk -v local="$local_height" -v public="$public_height" \
+    'BEGIN { if (public <= 0) exit 1; value = 100 * local / public; if (value > 100) value = 100; printf "%.1f", value }') &&
+  printf 'Local account height: %s\nPublic account height: %s\nUnchecked transactions: %s\n' \
+    "$local_height" "$public_height" "$unchecked" &&
+  if [ "$local_height" = "$public_height" ] && [ "$unchecked" = "0" ]; then
+    echo "Synchronization: caught up"
+  else
+    printf 'Synchronization: still in progress (height %s%%; %s unchecked remaining)\n' \
+      "$progress" "$unchecked"
+  fi
+}
+```
 
-The number of transactions in the network is greater than 400,000 at the time of writing. You can get a more exact number by asking the
-Atto community in the Discord server or on r/atto.
+The command reports `Synchronization: caught up` only when the local and public heights match and the unchecked count is zero. Run it twice
+before relying on the result.
 
-Congratulations, you are now running a node! However, to ensure that it keeps operating smoothly, you need to learn how to maintain it on a
-regular basis. After that, you will learn how to register for staking.
+Congratulations, you are now running a node! It may still be bootstrapping. To ensure that it keeps operating smoothly, you need to learn
+how to maintain it on a regular basis. After that, you will learn how to register for staking.
 
 ## Maintaining the Node
 
@@ -404,14 +376,14 @@ Run `sudo apt update`. When that finishes, run `sudo apt upgrade`.
 
 ### Checking the Node Log
 
-Run `docker logs -f atto-voter-node-node-1`. This may take a while if you don't maintain your node often.
+Repeat the health check from the previous section, followed by `docker compose logs --tail 200 node`.
 
 Inspect the logs to determine if your node is still connected to other nodes.
 
 ### Checking for Unchecked Transactions
 
-Your node should have zero unchecked transactions at all times, except when bootstrapping (when first setting it up or after some downtime).
-To check, log into the node's database (as explained before) and run `SELECT COUNT(*) FROM unchecked_transaction;`.
+Your node should normally have zero unchecked transactions after it has caught up. During a fresh bootstrap or recovery from downtime, the
+count may rise before it falls. Repeat the synchronization command from the previous section to check it.
 
 If there are any unchecked transactions and they aren't going away, update the node, wait a few hours and check again.
 
@@ -419,7 +391,7 @@ If there are any unchecked transactions and they aren't going away, update the n
 
 To update the node's Docker Image:
 
-1. Enter the project directory containing the `docker-compose.yml` file.
+1. Enter the project directory containing the `compose.yaml` file.
 2. Run `docker compose pull` to download updates for all images used by the project, and `docker compose up -d` to restart the containers
    for which there were any updates.
 
@@ -435,11 +407,11 @@ The first piece of information you need is your node's address.
 
 ### Getting Your Node's Address
 
-<!-- TODO: Update when log contains address -->
 Run the following command to get your node's address:
 
 ```bash
-curl -s 'http://localhost:8081/metrics/node.version' | sed 's/.*"address","values":\["\([^"]*\).*/\1\n/'
+curl -fsSL http://127.0.0.1:8081/metrics/node.version \
+  | jq -r '.availableTags[] | select(.tag == "address") | "Voter address: \(.values[0])"'
 ```
 
 ### Adding your information
@@ -489,4 +461,5 @@ finished bootstrapping and is experiencing no errors by checking the node's log 
 
 ---
 
-Your computer is now operating an Atto voter and participating in ORV. Thank you for making a difference!
+Your computer is now operating an Atto voter. Once it is caught up and has enough delegated weight, it can participate in ORV. Thank you
+for making a difference!
