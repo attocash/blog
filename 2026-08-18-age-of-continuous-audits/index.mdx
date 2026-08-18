@@ -1,0 +1,168 @@
+---
+slug: age-of-continuous-audits
+title: How Codex and Hermes independently found the same critical flaw in my cryptocurrency
+description: "I could not afford a professional audit for Atto. My first attempt with AI agents failed; the workflow I built next found a critical flaw already running on the live network."
+authors: [rotilho]
+image: ./image-social.jpg
+---
+
+
+import IdealImage from "@theme/IdealImage";
+
+<IdealImage
+  img={require('./image.jpg')}
+  alt="A solo developer coordinating AI agents as they inspect a network of Atto voting nodes."
+/>
+<br />
+<br />
+
+I built Atto mostly alone.
+
+Atto now confirms a typical transaction in about <a href="/metrics#confirmation-speed"><Metric
+name="network.confirmation-time.ms.seven-day-p50" precision={0} suffix=" ms" /></a> on its live network. As far as I can
+tell, that makes it the fastest cryptocurrency in the world.
+
+I am proud of that. The uncomfortable part is that almost every technical path still leads back to one person: me.
+
+On a normal day I may touch the wallet, discuss an integration, support the community, or work on the public API. I do all
+of that alongside parenting and a day job. The context switching is tiring, but the bigger risk is that the same assumptions
+can travel through design, implementation, and review without meeting much resistance.
+
+The stakes are higher when software moves money. Atto's node validates transactions, account-chain state, votes, and peer traffic.
+A mistake can affect the ledger or user funds.
+
+I spoke with audit firms, but a serious professional review was beyond what I could afford for a project I fund alongside
+everything else. So I tried to build a useful first line of security review with the tools available to me.
+
+It did not go well at first. The process I built afterward eventually found a critical consensus vulnerability in Atto's
+live network. Later, a newer Codex model found the same flaw from another direction. That path changed how I work on Atto.
+
+<!-- truncate -->
+
+## My first AI audit failed
+
+I was already using Codex for engineering work, so my first idea was simple: turn more agents into more reviewers.
+
+I split the node into broad lanes and gave each one to a separate Codex subagent. One reviewed networking, another
+persistence, another consensus, with more agents looking at dependencies and configuration.
+
+It sounded reasonable. It also failed.
+
+Atto is small compared with most cryptocurrencies. It is still large enough to clog an AI context window. A networking
+question can cross serialization, validation, state transitions, database writes, and recovery before there is enough
+evidence to call anything a finding.
+
+Workers either kept following a lead until their contexts filled up or returned summaries that dropped evidence needed by
+the next investigation. I became the missing coordination layer, trying to remember which questions remained open and
+which version of the repository each claim described.
+
+I had more reviewers. I did not yet have an audit process.
+
+## From OpenClaw to Hermes Kanban
+
+I first gave OpenClaw a run, but quickly found myself using Hermes for longer, coordinated work. Some time later, Hermes
+announced its Kanban feature, and I had a small eureka moment: a card could be more than a task. It could be a context
+boundary.
+
+Each card received one concrete question, the exact commit, relevant files, dependencies, and a directory for evidence. A
+worker received the card and artifacts from earlier work, not the conversation that created the audit.
+
+Discovery workers could map the architecture and identify suspicious paths without trying to finish every investigation.
+A planning stage could then split serious leads into fresh cards. Validation and reproduction happened separately from the
+original review.
+
+The split had to be mandatory. When workers were merely allowed to create follow-up cards, they usually tried to complete
+everything themselves. Once fan-out became an explicit step, four discovery cards expanded into 17 focused investigations
+and six reproduction tasks. Every path kept its own evidence and status.
+
+That was much closer to what I had hoped subagents would be in the first place.
+
+## First, learn how to audit
+
+Kanban solved the context problem, but it did not teach the agents how to audit software.
+
+Using agents for day-to-day automation taught me a simple rule: when I ask an agent to do something new, the first task I
+give it is to learn how the work should be done.
+
+So the first audit task was not to inspect Atto. I asked the agent to learn how to audit code and turn what it learned into
+skills it could follow during the real audit.
+
+Security auditing is not a native capability of the model in the same way that tool calling is. A model can read a lot of code and still miss a trust
+boundary, mistake a hardening suggestion for a vulnerability, or report a dangerous-looking path that is unreachable.
+
+The result was a separate Hermes profile called `code-auditor` with two audit skills. `expert-code-audit` pins the commit,
+maps the architecture and threat model, separates findings from hardening ideas, and requires evidence plus a verification
+path. `cryptocurrency-node-code-audit` adds the invariants that matter to Atto, including balance conservation, account
+ordering, vote handling, replay boundaries, and persistence.
+
+The repository remains read-only during an audit. Workers can write reports, logs, and reproductions into a separate
+directory, but they cannot quietly repair the checkout while they are still trying to establish what is wrong.
+
+It took several runs and plenty of tweaking before the workflow held together: explore, decompose, investigate each path in
+a fresh context, validate the serious findings, then write the report.
+
+Then it found a critical vulnerability.
+
+## The flaw was already live
+
+I expected hardening suggestions and perhaps a few ordinary bugs. Instead, one investigation reported that some inbound
+vote paths trusted the representative public key inside a received vote before validating its signature.
+
+A connected peer could use its own identity to join the network, then send a vote claiming the public key and voting weight
+of another representative. An affected node could count that forged weight during election or bootstrap processing. In the
+worst case, it could influence quorum and finality.
+
+My jaw dropped. My first reaction was that the agent must have misunderstood the code. "Critical" is an easy word to put in
+a report. Then I followed the path myself. It was right.
+
+Atto was already live. This was not a bug caught before it could reach the network. I fixed the validation and
+released node version 1.33, which rejects an inbound vote before using the representative weight it claims. The technical
+details are in the [published security advisory](https://github.com/attocash/node/security/advisories/GHSA-mm7v-33mg-6r9p).
+The vulnerability is CVE-2026-73855, with a critical CVSS 4.0 score of 9.3.
+
+**If you run an Atto node older than version 1.33, upgrade. There is no workaround for this vulnerability.**
+
+That shook me. I know this codebase better than anyone, and I had still missed a flaw that could have affected consensus on
+a live network.
+
+## Newer frontier models changed the equation
+
+When `gpt-5.6-sol` with ultra reasoning was released, I had the same feeling I had when I first saw Hermes Kanban: finally,
+something that could separate context properly.
+
+This time I ran the audit directly in Codex, without the Hermes workflow. Codex created and coordinated its own subagents.
+For the first time, the simple approach worked the way I had hoped it would when I tried it months earlier.
+
+It independently found the exact same critical vote-validation flaw. A different model, using its own subagents, had reached
+the dangerous code path without my purpose-built decomposition.
+
+It still missed several less severe vulnerabilities that the structured Hermes audit had caught.
+
+So I am not surprised that capable frontier models are now uncovering so many serious vulnerabilities. We are in different
+times. Even without much guidance, they can explore a repository, cross component boundaries, and sometimes find the one
+assumption that should never have survived.
+
+The misses matter just as much. Native subagents and a stronger model did not make the audit complete. The structured
+Hermes workflow still found things Codex did not.
+
+## Continuous auditing changed how I work
+
+After the first finding, I made the process part of every Atto release. I also rerun the full audit when a capable new
+frontier model becomes available, because a new model may follow a path an earlier one ignored.
+
+"Continuous" does not mean an agent watches every commit and declares the repository safe. Each run starts from a pinned
+commit and records what was checked, what was reproduced, and which questions remain open.
+
+A quiet run does not prove that Atto is secure. It only means that particular run did not produce a confirmed finding. The
+useful result is the growing collection of tests, evidence, and assumptions that the next audit can challenge again.
+
+I still want Atto to receive an independent professional audit. More agents cannot manufacture independence, and a clean AI
+report is not a security guarantee.
+
+But I no longer have to wait for a budget I do not have before challenging my own assumptions. I can repeat the review,
+preserve the evidence, and turn confirmed findings into fixes and regression tests.
+
+The agents inspect more paths than I could cover alone. I still decide whether a report is real, whether the reproduction
+matches the live system, and what must block the next release.
+
+I am still the bottleneck where judgment matters. At least I am no longer the only reviewer.
