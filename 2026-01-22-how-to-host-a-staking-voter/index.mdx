@@ -275,8 +275,35 @@ Before you can start the node, you need to make sure it has enough memory.
 Run `free -h` and confirm that the server has about 2 GB of physical RAM. A 2 GB plan usually appears as roughly 1.9 GiB in this output.
 This is a whole-server requirement, not the node process's requirement: the Compose configuration limits the node to 1 GB but does not
 hard-cap MySQL, because a 512 MB database limit can cause a fresh bootstrap to fail. Do not count swap toward this requirement: under
-bootstrap load, swapping can turn memory pressure into long disk stalls. A host swapfile may remain as an emergency safeguard, but the
-containers are configured to avoid using it.
+bootstrap load, swapping can turn memory pressure into long disk stalls. Keep host swap available as an emergency safeguard. The Compose
+configuration allows the node to use up to 1 GB of swap, but this may reduce synchronization throughput, increase voting latency, and
+increase disk activity.
+
+:::warning
+A voter can run on a 1 GB server when swap is enabled. At least 2 GB of physical RAM is still recommended to reduce swap use, preserve
+synchronization throughput, and keep voting latency low. Do not count swap as physical RAM when comparing server plans.
+:::
+
+### Adding a Swapfile on a 1 GB Server
+
+If your server has only 1 GB of physical RAM, run `swapon --show` to check whether it already has swap. If the command produces no output
+and `/swapfile` does not exist, create and enable a 2 GB swapfile:
+
+```bash
+sudo fallocate -l 2G /swapfile
+sudo chmod 0600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+```
+
+Make the swapfile available again after a reboot without adding a duplicate entry to `/etc/fstab`:
+
+```bash
+sudo grep -qF '/swapfile none swap sw 0 0' /etc/fstab || \
+  echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+Run `free -h` again and confirm that the `Swap` row reports approximately 2 GB before continuing.
 
 ### Starting the node
 
