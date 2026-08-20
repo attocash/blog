@@ -102,7 +102,7 @@ released as a Docker container, which cannot run in an already containerized env
 You will be given several options for the allocated hardware. Choose a plan that meets the following requirements and recommendations:
 
 - **Architecture**: AMD64 (`x86_64`)
-- **Storage**: 10 GB or greater SSD or NVMe SSD
+- **Storage**: 20 GB or greater SSD or NVMe SSD
 - **RAM**: 2 GB or greater
 
 When asked for the operating system, picking the latest LTS version of Ubuntu will enable you to smoothly follow along with this guide.
@@ -280,14 +280,15 @@ configuration allows the node to use up to 1 GB of swap, but this may reduce syn
 increase disk activity.
 
 :::warning
-A voter can run on a 1 GB server when swap is enabled. At least 2 GB of physical RAM is still recommended to reduce swap use, preserve
-synchronization throughput, and keep voting latency low. Do not count swap as physical RAM when comparing server plans.
+An all-in-one voter with an already-bootstrapped database may run on a 1 GB server when swap is enabled. Do not use a 1 GB server for a
+fresh bootstrap. At least 2 GB of physical RAM is recommended to reduce swap use, preserve synchronization throughput, and keep voting
+latency low. Do not count swap as physical RAM when comparing server plans.
 :::
 
 ### Adding a Swapfile on a 1 GB Server
 
-If your server has only 1 GB of physical RAM, run `swapon --show` to check whether it already has swap. If the command produces no output
-and `/swapfile` does not exist, create and enable a 2 GB swapfile:
+If you are moving an already-bootstrapped database to a server with only 1 GB of physical RAM, run `swapon --show` to check whether it
+already has about 2 GB of swap. If it does not and `/swapfile` does not exist, create and enable a 2 GB swapfile:
 
 ```bash
 sudo fallocate -l 2G /swapfile
@@ -295,6 +296,8 @@ sudo chmod 0600 /swapfile
 sudo mkswap /swapfile
 sudo swapon /swapfile
 ```
+
+If `/swapfile` already exists but is not listed by `swapon --show`, enable it with `sudo swapon /swapfile` instead of recreating it.
 
 Make the swapfile available again after a reboot without adding a duplicate entry to `/etc/fstab`:
 
@@ -366,9 +369,8 @@ Stop following the log by interrupting the currently running command with Ctrl+C
     | jq -r '.measurements[] | select(.statistic == "VALUE") | (.value | floor)') &&
   public_height=$(curl -fsSL https://gatekeeper.live.application.atto.cash/projections/metrics \
     | jq -r '.metrics[] | select(.name == "account.height.count") | .value') &&
-  unchecked=$(docker compose exec -T node-mysql sh -c \
-    'MYSQL_PWD="$MYSQL_PASSWORD" mysql --batch --skip-column-names \
-    -u"$MYSQL_USER" "$MYSQL_DATABASE" -e "SELECT COUNT(*) FROM unchecked_transaction;"') &&
+  unchecked=$(curl -fsSL http://127.0.0.1:8081/metrics/transactions.unchecked.count \
+    | jq -r '.measurements[] | select(.statistic == "VALUE") | (.value | floor)') &&
   progress=$(awk -v local="$local_height" -v public="$public_height" \
     'BEGIN { if (public <= 0) exit 1; value = 100 * local / public; if (value > 100) value = 100; printf "%.1f", value }') &&
   printf 'Local account height: %s\nPublic account height: %s\nUnchecked transactions: %s\n' \
@@ -382,8 +384,8 @@ Stop following the log by interrupting the currently running command with Ctrl+C
 }
 ```
 
-The command reports `Synchronization: caught up` only when the local and public heights match and the unchecked count is zero. Run it twice
-before relying on the result.
+The command reports `Synchronization: caught up` only when the local and public heights match and the unchecked count is zero. The
+unchecked metric refreshes once per minute, so wait at least one minute and run the command again before relying on the result.
 
 Congratulations, you are now running a node! It may still be bootstrapping. To ensure that it keeps operating smoothly, you need to learn
 how to maintain it on a regular basis. After that, you will learn how to register for staking.
