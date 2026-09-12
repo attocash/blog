@@ -1,7 +1,7 @@
 ---
 slug: how-to-host-a-staking-voter
-title: "How To Host A Staking Voter"
-description: "Learn how to set up an Atto voter node and request staking-reward registration. Zero Linux experience required."
+title: "How to Host an Atto Voter on Ubuntu"
+description: "Set up an Atto voter on Ubuntu: choose a server, install Docker, verify synchronization and request voter registration. A step-by-step guide for new operators."
 authors: [waldolemmer]
 image: ./image-social.jpg
 ---
@@ -54,7 +54,7 @@ Different providers have servers in different locations, although some may have 
 provider and geographic diversity, the following providers are listed in a random order:
 
 export const RandomList = ({items}) => {
-  const [randomized, setRandomized] = React.useState([]);
+  const [randomized, setRandomized] = React.useState(items);
 
   React.useEffect(() => {
     const shuffled = [...items].sort(() => Math.random() - 0.5);

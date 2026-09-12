@@ -1,7 +1,7 @@
 ---
 slug: account-chains-parallel-ledgers-explained
-title: Your Own Blockchain Lane - Understanding Account-Chains and Parallel Ledgers
-description: Discover how account-chains and parallel ledgers revolutionize blockchain scalability by giving each user their own mini-blockchain. Learn how this multi-lane approach enables faster, feeless transactions and breaks free from traditional single-chain bottlenecks.
+title: Account Chains and Block Lattices Explained
+description: How account chains give each account its own blockchain lane, connect payments through send and receive blocks, and let transactions run in parallel.
 authors: [rotilho]
 image: ./image-social.jpg
 ---
@@ -18,7 +18,7 @@ import Metric from "@site/src/components/Metric";
 />
 <br />
 <br />
-Ever feel like waiting for a Bitcoin transaction is like standing in a long checkout line at the grocery store? In traditional blockchains like Bitcoin or Ethereum, every transaction from everyone lines up to be processed on **one shared chain** – essentially one checkout lane for the entire network. This one-lane design can get congested, limiting how fast transactions go through. But what if **everyone could have their own checkout lane**? In the blockchain world, that’s the idea behind **account-chains and parallel ledgers**. Instead of one single chain for all transactions, each user maintains their own mini-blockchain. This approach (pioneered by projects like [Nano’s](https://nano.org) _[block-lattice](https://coinmarketcap.com/academy/glossary/block-lattice-nano)_ and used in newer projects like [Atto](https://atto.cash)) promises to turbocharge speed and scalability by letting many transactions happen at once.
+Ever feel like waiting for a Bitcoin transaction is like standing in a long checkout line at the grocery store? In traditional blockchains like Bitcoin or Ethereum, every transaction from everyone lines up to be processed on **one shared chain** – essentially one checkout lane for the entire network. This one-lane design can get congested, limiting how fast transactions go through. But what if **everyone could have their own checkout lane**? In the blockchain world, that’s the idea behind **account-chains and parallel ledgers**. Instead of one single chain for all transactions, each account maintains its own mini-blockchain. This approach (pioneered by projects like [Nano's block-lattice](https://docs.nano.org/protocol-design/ledger/) and used by [Atto](/)) lets many transactions move forward at once, instead of making unrelated accounts wait for their place in one shared block.
 
 In this post, we’ll break down what account-chains are, how they differ from the classic blockchain model, and why having parallel personal ledgers can make a blockchain much faster and more scalable. We’ll use simple language and analogies – so grab a virtual shopping cart, and let’s explore this multi-lane approach to blockchains!
 
@@ -44,32 +44,57 @@ So instead of one monolithic blockchain, you have a **collection of mini-blockch
 
 Together, the confirmed send + confirmed receive pair complete the transfer. Each account-chain independently tracks an account’s balance, and transfers are handled by these updates to two separate chains, validated by this rapid, asynchronous voting. All nodes still witness these transactions and hold copies of the chains for security, but the key is that **each transaction is confirmed individually via voting**, without waiting for a global block. This voting mechanism is also crucial for resolving conflicts, like if someone tries to spend the same money twice; the representatives vote to agree on which transaction is legitimate, ensuring the overall ledger stays consistent.
 
+[Atto's account-chain transaction model](/docs/whitepaper/technical#ledger-structure-and-transaction-model) explains these operations
+and the account state each one changes.
+
 In essence, account-chains transform the blockchain data structure from “one shared ledger everyone writes to” into **“many ledgers that update in parallel and are confirmed via rapid, distributed voting”**. It’s a fundamentally different model that has big implications for speed and scalability.
 
 ## An Analogy: Multiple Checkout Lanes for Transactions
 
 To make this clearer, let’s return to the **checkout lane analogy**. Traditional single-chain blockchain = one checkout lane. All customers (transactions) line up in one queue. This can get *really* slow at peak times. Now, account-chains = having **many checkout lanes open**. Each customer (each user) can go to their own dedicated lane and check out at their own pace. Suddenly, many people are being served at the same time.
 
-In a store, adding more lanes massively increases throughput; similarly in a blockchain, having many account-chains means many transactions can be processed at once. As a recent explainer put it, if a store had only one register open, the line moves slowly and customers get frustrated – but multiple lanes allow serving several customers simultaneously. Account-chains give **each user their own lane**, so they rarely have to wait for someone else’s transaction to finish before theirs can go through.
+In a store, opening more checkout lanes lets several customers pay at the same time. Someone buying a single apple does not have to
+wait for a full trolley to be scanned in front of them. Account-chains bring that same idea to transaction ordering: Alice can update
+her history while Carol updates hers, without deciding which of those unrelated payments belongs first in a shared block.
 
-Another way to picture it: imagine everyone keeping their own transaction diary. When Alice pays Bob, she writes a line in her diary (“Sent $5 to Bob”), and Bob writes a line in his diary (“Received $5 from Alice”). In a traditional blockchain, by contrast, Alice and Bob would *both* wait for a notary to write “Alice paid Bob $5” into a single public ledger. The diary method is faster because Alice and Bob can write in parallel, as long as they eventually show everyone those entries to avoid any disagreement. This is essentially what account-chains do – allow parallel transaction entries in a decentralized way.
+Another way to picture it: imagine everyone keeping their own transaction diary. When Alice pays Bob, she writes a line in hers:
+“Sent $5 to Bob.” Once the Send is confirmed, Bob adds “Received $5 from Alice” to his. Meanwhile, Carol and Dave can be recording
+an entirely different payment in their diaries.
+
+With one shared ledger, all those entries need a place in the same book. With account-chains, **each diary keeps its own order**,
+and the matching send and receive entries connect the books. That is the lattice: separate histories, woven together by payments.
 
 ## How Account-Chains Improve Speed and Scalability
 
-**Parallel Processing:** The biggest win is that transactions don’t have to line up behind each other. Since each account chain can be updated independently, many transactions can be processed concurrently across the network. There’s no global block interval that all transactions must fit into. If Alice wants to send money at the same time as Bob, and Carol, and Dave... they all just add blocks to their own chains simultaneously. It’s like having dozens of supermarket lanes open – a flurry of activity instead of one-at-a-time. This parallelism boosts the overall throughput of the system dramatically.
+**Parallel Processing:** The biggest win is that unrelated transactions can move forward together. If Alice wants to send money at
+the same time as Bob, Carol and Dave, they can each add an update to their own chain. Alice's next payment follows her first one,
+but Bob's payment does not have to be written before or after either of them. It is the difference between several people writing
+in their own notebooks and everyone waiting for a turn with the same pen.
 
-**No Waiting for Global Consensus on Each Transaction:** In traditional blockchains, every full node has to verify every block and come to consensus on it. In account-chain systems, consensus is often designed differently so that, for example, only the parties involved (and some lightweight voting or checking by the network) are needed per transaction. The entire network doesn’t pause to agree on one big block of many transactions; instead, consensus happens more continuously and locally for each transaction or each pair of send/receive. This means confirmation can be near-instant since there’s no need to gather a ton of transactions into a block and mine it.
+**No global block interval:** Atto's representatives vote on individual account updates as they arrive. Once an update has enough
+voting weight behind it, it can be confirmed without waiting for a timer to tick or a batch of unrelated payments to be assembled.
+The network still agrees about who owns what; it reaches that agreement one account update at a time.
 
-**Less Contention = Low Latency:** Because each user writes their own chain, two users transacting at the same time *usually don’t slow each other down*. Unless they are transacting with each other, they’re basically operating in parallel universes that occasionally intersect. This leads to very low latency. Atto's network currently confirms typical transactions in about <a href="/metrics#confirmation-speed"><Metric name="network.confirmation-time.ms.seven-day-p50" precision={0} suffix=" ms" /></a>, much faster than waiting for a Bitcoin 10-minute block. In general, removing the global bottleneck means the network can handle more transactions per second, limited mostly by network bandwidth rather than strict protocol delays.
+**Less Contention = Low Latency:** Removing that shared block schedule takes a source of waiting out of every payment. That matters
+when someone is buying a coffee or software is paying for a single API call: the next step can follow as soon as the payment confirms.
+Atto's seven-day median confirmation time is currently <a href="/metrics#confirmation-speed"><Metric name="network.confirmation-time.ms.seven-day-p50" precision={0} suffix=" ms" /></a>.
+That measures the confirmation step at a node; a complete checkout also includes wallet preparation and receipt. See
+[how the timing is measured](/docs/whitepaper/technical#performance-and-security-considerations) for the details.
 
-**Scalability:** As more users join, a single-chain system often bogs down (more competition for the one chain). In an account-chain system, **adding more accounts doesn’t inherently create congestion** – new accounts bring their own lanes. The system scales horizontally: if you have 1000 active users, you have 1000 chains working in parallel. As long as the infrastructure (nodes and network) can keep up with verifying and relaying transactions, the design can support much higher throughput. One source describes this as horizontal scalability: each account chain can grow and new accounts don’t choke a single pipeline. In fact, the block-lattice structure was specifically created to address scalability limitations of single-chain designs.
+**Scalability:** With 1,000 active accounts, you have 1,000 histories that can advance alongside one another. Their updates do not
+have to squeeze into the next shared block. This gives nodes room to process independent work concurrently, making better use of
+the processing power and network connections available to them.
+
+The lanes still share infrastructure. Nodes need CPU, memory, storage and bandwidth to check transactions and exchange votes, so
+heavy load can delay payments across accounts. Parallel chains remove the shared ordering bottleneck; node capacity and available
+voting weight determine how much work the network can carry.
 
 To sum up the benefits, let’s highlight a few key points:
 
-- **Ultra-Fast Transactions:** Each account chain can update without waiting on others, allowing near-instant processing. There’s no need to collect transactions into a block and confirm them one by one.
-- **High Throughput:** Many transactions at once = high TPS (transactions per second). The network can process transactions in parallel across different account-chains, only limited by communication speeds.
-- **No Congestion from Heavy Users:** If one user spams a lot of transactions on their own chain, it doesn’t directly fill up a global block or slow down others – others’ chains remain unaffected, aside from some bandwidth use. It’s like one busy lane at the store doesn’t halt the other lanes.
-- **Low or No Fees:** This is a side-effect, but worth noting: because there’s no need for miners to bundle transactions (and often no mining at all), many account-chain based networks have negligible fees. With no competition for block space, you typically don’t pay higher fees to prioritize your transaction – every transaction can go through quickly by design.
+- **Fast confirmations:** Representatives can confirm each account update without waiting to assemble a shared block.
+- **Parallel throughput:** Nodes can work on transactions from many accounts at once.
+- **Less account-level contention:** A busy account grows its own history, while unrelated accounts keep their own transaction order.
+- **Feeless payments:** Atto pairs this architecture with zero protocol transaction fees, making even tiny transfers useful.
 
 Of course, this model still requires a way to ensure all those independent chains agree on the overall state (so nobody double-spends or creates money from thin air). Different implementations handle this with various consensus mechanisms and types of parallel chains. The technical details can get complex, but the take-home message is that **security and consistency are maintained even without the one-blockchain rule**, using clever alternate consensus rules. The result is a system that’s both secure and **blazing fast**.
 
@@ -83,7 +108,9 @@ Following in Nano’s footsteps, other projects have adopted similar ideas. **At
 
 ## Wrapping Up
 
-Account-chains and parallel ledgers offer a fresh take on how we structure blockchains. By giving each user their **own blockchain lane**, this model sidesteps the traffic jam of traditional single-chain systems. The result is a network that can achieve quick, seamless transactions even as usage grows, because activity happens concurrently rather than sequentially.
+Account-chains and parallel ledgers offer a fresh take on how we structure blockchains. By giving each account its **own blockchain
+lane**, the network can work on many payments at once. Every account keeps an ordered history, and send/receive pairs connect those
+histories into one ledger. That is how separate lanes can still tell a coherent story about where the money went.
 
 For a general tech observer, the key idea to remember is the **checkout lane analogy**: many lanes vs one lane. Traditional blockchains make everyone use one lane (great for unity, but slow when crowded). Account-chain systems let everyone run in their own lane (many things happening at once), and then use clever methods to make sure all those lanes still agree on who owns what.
 

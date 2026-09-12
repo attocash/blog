@@ -1,6 +1,6 @@
 ---
 slug: why-instant-and-feeless-are-inclusive
-title: "Why instant and feeless are inclusive"
+title: "Why Instant, Feeless Micropayments Are Inclusive"
 description: "Why fees and delays make digital payments harder for small purchases, micropayments, remittances, and machine-to-machine payments, and why Atto was designed without them."
 authors: [rotilho]
 image: ./image-social.jpg
@@ -68,8 +68,8 @@ software pay for a single API call, not a monthly bundle. That is the opposite o
 [subscription trap](/blog/escaping-the-monthly-subscription-trap), where everything becomes a recurring bill because
 small one-off payments are too awkward.
 
-Atto makes this practical at the protocol level. Transactions are feeless. Atto supports 9 decimal places, so one ATTO
-is 1,000,000,000 raw units. There is no protocol-level minimum amount, although exchanges and apps can still set their
+Atto makes this practical at the protocol level. Transactions are feeless, and amounts go down to 0.000000001 ATTO.
+That smallest unit is called one raw unit: one ATTO is 1,000,000,000 raw units. Exchanges and apps can still set their
 own limits.
 
 That combination matters. If the network is feeless but slow, it does not work at a gate or checkout. If it is fast but
@@ -89,3 +89,6 @@ feeless is not a nice extra. It is what makes the payment possible.
 
 Want to experience it? Create a [wallet](https://wallet.atto.cash) and try it with free ATTO from
 the [faucet](https://atto.cash/faucet).
+
+Building payments into software? Start with the [Atto integration guide](/docs/integration), or use
+[Atto wallet tools for your assistant](/build/mcp) to connect an MCP-compatible agent with locally approved spending limits.

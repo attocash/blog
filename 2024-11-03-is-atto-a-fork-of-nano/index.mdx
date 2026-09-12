@@ -1,7 +1,7 @@
 ---
 slug: is-atto-a-fork-of-nano
-title: Is Atto a Fork of Nano? Let's Clear Things Up
-description: Atto and Nano might look similar, but there's more to the story. Is Atto really a fork of Nano? Discover the unique journey behind Atto.
+title: "Atto vs Nano: Is Atto a Fork?"
+description: Atto was built independently with inspiration from Nano. Compare account chains, block fields, node roles and signing choices, with links to protocol details.
 authors: [ rotilho ]
 image: ./image-social.jpg
 ---
@@ -17,7 +17,8 @@ After all, Atto and Nano share many of the same goals and even some design ideas
 But here's the key thing: Atto is not a direct fork of Nano; it’s a unique project built from scratch, even though it draws plenty of
 inspiration from Nano.
 
-In this post, we'll explain how Atto relates to Nano, what makes it different, and why it was created as a new project. Let's dive in!
+In this post, we'll explain how Atto relates to Nano, what makes it different, and why it was created as a new project.
+For the current specification, see [Atto protocol details and assumptions](/docs/whitepaper/technical).
 
 <!-- truncate -->
 
@@ -31,8 +32,9 @@ We’re all aiming for the *original* crypto dream: **decentralized digital cash
 
 On a technical level, both Atto and Nano use an innovative ledger structure where **each account has its own chain of blocks**
 (like each person keeping their own transaction history). It’s different from Bitcoin or Ethereum where everyone’s transactions share
-one big chain (and often wait in one big line). In Atto and Nano, everyone effectively has their **own lane**, so transactions don’t
-bottleneck each other.
+one big chain (and often wait in one big line). In Atto and Nano, everyone effectively has their **own lane**, so unrelated accounts can
+advance in parallel. They still share node resources and network capacity; [how account chains work](/blog/account-chains-parallel-ledgers-explained)
+explains that distinction.
 (If you’ve ever been stuck in one checkout line at a store while other lines are free, you’ll appreciate the multi-lane approach!)
 Also, both systems use a form of **double-entry bookkeeping** for transfers – meaning a transaction is recorded as a debit on the
 sender’s side and as a credit on the receiver’s side. These similarities are by design, since they’re great ideas that make fast
@@ -44,79 +46,75 @@ Some are technical tweaks, but don’t worry – we’ll use simple language or 
 
 ## Block Height – Adding Page Numbers to the Ledger
 
-One key improvement in Atto is the introduction of **block height** in each account’s chain. *Block height* is basically a counter or
-sequence number for each transaction/block in an account. Why does that matter? Imagine reading a book where the pages **aren’t numbered**.
-If you’re handed a random page, how do you know where it goes in the story? You’d have to scan the text and compare it to the entire book
-to figure out where it fits – tedious, right? That’s how Nano’s nodes have to treat incoming transactions, because Nano’s blocks don’t
-carry an explicit sequence number. They only link to a previous block by a cryptographic hash (think of that like a unique fingerprint).
-It works, but finding where a new piece fits can involve checking against what you already have, much like searching the whole book
-for where a page might belong.
+One useful addition in Atto is **block height**: a sequence number for each block in an account's history. Think of it as putting
+page numbers on a ledger. When block 50 arrives, a node immediately knows, “This is page 50 of Alice's ledger.” If it only has up to
+page 48, it can tell that page 49 is missing. If it already has page 49, block 50 is the next one to check. A block numbered below
+the account's current height is old news.
 
-Atto fixes this by numbering each block in an account (1, 2, 3, and so on). So when a new transaction arrives with a certain height
-(say it’s block number 50 in that account), the node immediately knows, “This is page 50 of Alice’s ledger.” If the node only has up
-to page 48, it can tell it’s missing page 49 and needs to catch up. If it already has page 49, then adding page 50 is straightforward.
-**In short, adding block height is like putting page numbers on each transaction**, making the whole ledger easier to navigate.
-This speeds up validation (you can spot missing pieces at a glance) and makes syncing the network faster.
-Nodes no longer have to search by fingerprints alone; they can jump right to where a transaction belongs or detect that it’s old news
-if the number is far below what they’ve seen. It’s a simple addition with big benefits for keeping the network lean and up-to-date.
+That makes **validation and bootstrapping simpler**. The node can use a number comparison to spot a missing predecessor or an old
+block. When catching up with the network, it can request a specific range of heights, like asking for pages 49 through 60 instead
+of merely knowing that some history is missing. The node still checks signatures, previous-block hashes and account state;
+the page numbers make finding gaps and deciding what to fetch straightforward.
+
+Atto's Send, Receive and Change blocks carry this height field; the first block, Open, is always page 1, so its height is implicit.
+Nano also [tracks heights in its node database](https://docs.nano.org/glossary/#block-height), but its
+[state blocks](https://docs.nano.org/protocol-design/blocks/#state-blocks) do not carry the number themselves. Atto puts that useful
+piece of information directly in the block being passed between nodes.
 
 ## Node Identification – Less Chatter for Listeners
 
 Another difference is how Atto handles network “chatter” during voting. Both Nano and Atto use **Open Representative Voting (ORV)**,
-where certain nodes (voters) vote on which transactions are valid. In Nano, all nodes end up hearing all vote messages,
-even if some nodes aren’t participating in voting. It’s a bit like everyone in a room having to listen to a panel of judges debate
-and vote on every single issue – even the people in the back who are just observers. That can create a lot of background noise!
+where representative nodes vote on account updates. Picture a room with judges discussing a decision and observers waiting for the
+result. Does every observer need to hear the whole discussion?
 
-Atto introduces a way for nodes to **identify their roles**, effectively saying whether they’re active voters or just followers.
-In practice, this means a node that isn’t a voter doesn’t need to receive every single vote message flying around.
-It can just receive the final outcomes (the final votes) without getting bogged down in the intermediate voting chatter.
+Atto nodes **identify their roles** as voters or followers. When broadcasting votes, intermediate votes go to voters;
+final votes go to both voters and followers. Followers use those final votes to confirm updates to their own ledger,
+without receiving the ordinary back-and-forth between voters.
 Using our analogy: the observers in the room don’t have to hear every word the judges say; they just hear the final verdict when
 it’s decided. This streamlines network traffic and reduces unnecessary load on non-voting nodes. The network becomes more efficient
 because messages are routed more intelligently – voters still discuss and vote, but the “silent bystanders” aren’t flooded
 with every whisper. They get to stay in the loop **only when it really matters**, i.e., when a decision (vote result) is finalized.
 
-For a non-technical user, what this means is that **Atto’s network has reduced network requirements**, since those who just want to run
-a node to track the ledger don’t have to dedicate as much bandwidth and processing to all the consensus noise.
-It’s like subscribing to highlights of a game instead of watching every play-by-play when you’re not on the team.
+For someone running a follower, this means less intermediate voting traffic to receive and process. It is like subscribing to
+the highlights of a game instead of following every play-by-play when you are not on the team.
 
 ## Timestamps – Keeping Transactions Fresh and in Order
 
 When you make a transaction in Atto, the block includes a **timestamp** (the current time according to the sender).
-This is another area where Atto diverged from Nano. In Nano, there’s no timestamp on each block; the network just assumes the order
-based on when blocks are received and their logical sequence. Atto decided to add timestamps, and this brings a few key advantages.
+This is another area where Atto diverged from Nano. Nano's blocks express account-chain order through links to previous blocks,
+without carrying a timestamp. Atto adds timestamps alongside those links, and this brings a few useful advantages.
 
 **First: Freshness-based scheduling.**
 When the network is busy, timestamps help nodes **prioritize fresher transactions** among those that are within the acceptable time window.
 Transactions closer to the current time are processed first, which keeps the system responsive and fair under load.
 
 **Second: Validity window & anti-precompute.**
-Atto enforces a simple rule: if a block’s timestamp is too far in the **future**, it’s **rejected**. If it’s too far in the **past**,
-it’s **accepted but de-prioritized** relative to transactions closer to “now.” This both preserves ordering and **prevents precomputed spam** from being unleashed later, since out-of-window future timestamps won’t be accepted at all.
+Atto rejects a block whose timestamp is too far in the **future**. Older transactions receive lower priority than fresher ones and
+must still satisfy account-ordering and other validation rules. Stockpiling blocks with today's timestamp does not preserve their
+priority indefinitely; dating them far into the future does not let them enter the network early.
 
 **Third: Automatic PoW adjustments.**
-Timestamps allow the **proof-of-work difficulty** to **increase automatically every two years** without changing the block format
-or requiring a protocol upgrade. The network **uses** the timestamp in each block to determine the current period and apply
-the appropriate difficulty, avoiding disruptive version bumps just to tweak PoW.
+Timestamps also let **proof-of-work difficulty increase on a built-in schedule**. A node reads the block's calendar year and applies
+the difficulty for that period. There is no need to change the block format or coordinate a protocol upgrade each time the scheduled
+difficulty changes: the rule is already part of the protocol.
 
-## Confirmed-Only Building – No Unconfirmed Dependencies Allowed
+The schedule follows a two-year exponential curve, applied by UTC calendar year with integer rounding. It is a calendar-based
+adjustment, not a reaction to a busy afternoon on the network. The
+[work formula](/docs/whitepaper/technical#block-identity-signatures-and-work) gives the calculation.
 
-This is a more nuanced technical improvement, but an important one for network health. In Atto, a new block will only be accepted if the
-block it points to (usually the previous block in that account, or the send block it’s receiving) is already known **and confirmed**
-by the network. In Nano, under some conditions, a node might hear about a new block that references a previous one it hasn’t seen yet;
-the node would then have to go find that missing piece (this is sometimes called a “lazy bootstrap” scenario). Attackers could exploit
-that by throwing lots of out-of-order pieces at nodes to keep them busy.
+## Confirmed Dependencies – Building on Known Account State {#confirmed-only-building--no-unconfirmed-dependencies-allowed}
 
-Atto takes a stricter stance: basically **“I won’t believe this new block exists until I’ve seen and confirmed its parent block.”**
-It’s like saying you can’t build the second floor of a house until the first floor is complete and certified solid. If someone tries
-to hand in a block that depends on another block which isn’t confirmed in the ledger, Atto nodes will reject it outright.
-This closes a potential attack avenue where bad actors might try to confuse the network with chains of unconfirmed transactions or
-cause extra load by making nodes chase down unknown references.
+A new account update builds on **confirmed history**. A node needs the previous account state and, for a receipt, the confirmed Send
+it claims before it can apply the update. It is like building a house: the second floor needs a first floor that is already in place.
+This gives validation a concrete starting point, including the balance being changed and the payment being received.
 
-In simpler terms, imagine a story where someone tries to publish Chapter 5 when Chapter 4 isn’t out yet. Atto’s rules would refuse to
-accept Chapter 5 until Chapter 4 is published and acknowledged by everyone. By doing so, the story (transaction history) always remains
-coherent and attackers can’t slip in “future chapters” to mess things up. For the user, this means more security and stability – every
-new transaction builds on a firmly confirmed history, no exceptions. It helps the network **stay in consensus and avoid confusion**,
-even under attack.
+Imagine Chapter 5 arriving before Chapter 4. The node may hold it while it retrieves or confirms the missing chapter, but it cannot
+add it to the confirmed story yet. That distinction matters: arriving out of order does not mean automatic rejection, and being
+received does not mean being confirmed.
+
+The benefit is a coherent account history, with each applied update checked against an established predecessor. The node still has
+to manage waiting transactions and missing history; its
+[transaction queues and bootstrap rules](/docs/whitepaper/technical#feeless-transfers-still-consume-resources) handle that work.
 
 ## Standard Cryptography – Compatibility over Custom Speed
 
@@ -124,20 +122,17 @@ Here’s a difference that most users won’t notice on the surface, but it make
 **Atto uses standard Ed25519 cryptography for signatures**, whereas Nano uses a slightly modified version of Ed25519 with a
 different hashing algorithm (Blake2b instead of the usual SHA-512). What does that techno-babble mean? Basically, both Atto and
 Nano rely on elliptic curve digital signatures (Ed25519) to secure transactions – that’s how your wallet proves “I am the owner of
-these funds and I authorized this transaction” without revealing your private key. Nano’s implementation made a tweak to use a
-faster hash (Blake2b) in the signing process to squeeze out more performance. The downside is that this **custom scheme isn’t
-part of most crypto libraries or hardware by default**. It’s like a slightly different dialect that not everyone speaks.
+these funds and I authorized this transaction” without revealing your private key. Nano's
+[BLAKE2b-based variant](https://docs.nano.org/protocol-design/signing-hashing-and-key-derivation/#signing-algorithm-ed25519)
+needs an implementation of that particular variant. It is like a slightly different dialect that not every library speaks.
 
-Atto chose to stick with the **standard Ed25519** as defined in common libraries and protocols. This means if you pick up a typical
-cryptographic library, or you use a hardware security module (HSM) or hardware wallet, it likely supports Ed25519 out-of-the-box – and
-Atto’s signatures will be compatible with it. In contrast, using Nano’s custom variant often requires special code or forks of libraries.
-By using the standard approach, Atto prioritizes **compatibility and ease of integration**.
+Atto chose to stick with **standard Ed25519**, so developers can reuse existing implementations of the signing algorithm instead of
+adapting or maintaining a network-specific variant. That means less custom cryptographic code to integrate and maintain, and more
+choice among established libraries. This is the practical payoff of choosing **compatibility and ease of integration**.
 
-Think of it like phone chargers: Nano’s choice is a bit like a proprietary fast-charger – it might charge a little faster,
-but if you lose that charger, you can’t just borrow any cable lying around, and not all chargers will fit. Atto’s method is like using
-the common USB-C charger that everyone has; it might be a hair slower in theory, but it works everywhere without special adapters.
-And in practice, the speed difference is negligible – we’re talking maybe a few nanoseconds difference in signing a transaction,
-which is nothing when the real bottlenecks are network latency and disk speed, not the signature algorithm.
+Think of it like choosing a standard connector instead of one that needs an adapter. The connector makes one part of the job easier;
+it does not make a complete device for you. Similarly, a wallet or hardware signing product still needs to support Atto's key
+handling, block encoding and transaction flow, but its Ed25519 signing implementation can be reused.
 
 ## Why a New Project Instead of a Nano Update?
 
@@ -171,7 +166,7 @@ just taking different routes to get there.
 
 Atto is **not a fork of Nano** in the codebase sense – it was built from the ground up, not copied. However, it **is a spiritual sibling**
 in many ways: it took inspiration from Nano’s successes (and also learned from some challenges). You could say Nano walked so that
-Atto could run. We’ve gone over how Atto introduces block heights, node identification, timestamps, stricter confirmation requirements,
+Atto could run. We’ve gone over how Atto uses block heights, node identification, timestamps, confirmed account state,
 and standard crypto algorithms to push the idea of feeless digital cash a step further. These changes aim to make the network easier to use,
 more robust against attacks, and friendlier to integrate with other technology.
 

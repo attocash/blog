@@ -105,7 +105,8 @@ Boring does not mean careless. Boring means the problems are visible.
 When a node is slow, you want a profiler. When bootstrap is stuck, you want metrics. When ledger state looks off, you want queries. When a
 database grows, you want ordinary paths for monitoring, backup, restore, and replication.
 
-Those are backend software practices applied to crypto infrastructure.
+Those are backend software practices applied to crypto infrastructure. The deployment guide shows how to
+[run and inspect an Atto node](/docs/integration/node).
 
 ## The hard parts are in the protocol
 
@@ -137,7 +138,8 @@ That is why bootstrap has been the hardest technical problem so far. A single-ch
 with many small histories that reference each other. It has to find missing blocks, resolve dependencies, validate account state, process
 sends and receives consistently, and end up with the same ledger as the rest of the network.
 
-No language choice removes that problem.
+No language choice removes that problem. The technical whitepaper explains the
+[account-chain protocol and bootstrap assumptions](/docs/whitepaper/technical).
 
 ## What Atto chose, and why
 
@@ -154,7 +156,8 @@ You can see it in the choices:
 - Kotlin keeps protocol objects and asynchronous flows readable.
 - Spring Boot and the JVM handle lifecycle, configuration, observability, and shipping.
 - Prometheus, Micrometer, and MySQL make node behavior and ledger state inspectable.
-- Kotlin Multiplatform lets wallets, libraries, node software, integrations, and tools share core protocol code.
+- Kotlin Multiplatform lets wallets, libraries, node software, integrations, and tools share core protocol code through
+  [Atto Commons shared protocol libraries](/build/commons).
 
 That stack does not make the protocol simple. It makes the surrounding work less mysterious.
 
