@@ -1,0 +1,122 @@
+---
+slug: payments-for-ai-agents-compared
+title: "Payments for AI agents: Atto, Nano, USDC and Lightning compared"
+description: Compare Atto, Nano, USDC on Base and Solana, and Bitcoin Lightning for agent payments, including fees, funding, confirmation and available integrations.
+authors: [rotilho]
+image: ./image-social.jpg
+---
+
+import IdealImage from "@theme/IdealImage";
+
+<IdealImage
+  img={require('./image.jpg')}
+  alt="A blue agent robot compares five payment routes connecting small payments to the same server on a golden background."
+/>
+
+An agent needs one piece of data before it can finish a task. The provider charges a fraction of a cent. The agent has a budget, the data is available, and both sides would benefit from the exchange. Then comes the payment integration.
+
+Can the agent pay that small amount directly? Does it need another currency for fees? When can the provider return the data? What happens if the request times out after money has moved?
+
+Atto fits AI-agent micropayments that need separate transfers without protocol fees and wallet-enforced spending limits, provided you can build the service's payment logic. USDC on Base or Solana may fit dollar budgets and existing x402 services better; Lightning fits bitcoin services using L402. Nano also offers feeless transfers and community agent integrations.
+
+We build Atto for small, direct payments. This comparison follows each option from a funded wallet to a delivered API response, including costs, confirmation and integration readiness.
+
+<!-- truncate -->
+
+*Technical capabilities checked on November 1, 2026. Fees and provider support can change; the linked sources describe the underlying mechanisms.*
+
+## Compare the payment you need to make
+
+For an API call, a useful starting point is the smallest unit you intend to charge for. A service selling thousands of tiny responses has different requirements from an agent making an occasional larger purchase.
+
+| Option | Asset and funding | Payment costs | Completion to check | Agent integration path |
+| --- | --- | --- | --- | --- |
+| **Atto** | Fund with ATTO; its dollar value can change | No protocol fee; work and infrastructure still consume resources | Confirmed Send; separate receipt makes funds spendable | MCP, CLI and APIs; paid-request application logic still needed |
+| **Nano** | Fund with XNO; its dollar value can change | No protocol fee; work and infrastructure still consume resources | Confirmed send; separate receive makes funds spendable | Community x402 and MCP tools, plus RPC/wallet interfaces |
+| **USDC on Base** | Fund with USDC; ETH pays network gas, potentially through a sponsor | Execution and Ethereum data fees; provider fees may apply | Choose between sequencer confirmation and stronger settlement stages | x402 integrations, wallets and facilitators |
+| **USDC on Solana** | Fund with USDC; a fee payer supplies SOL | Transaction fees; recipient token-account setup may require storage funding | Choose the required commitment level | x402 integrations, wallets and facilitators |
+| **Bitcoin Lightning** | Fund with bitcoin and provision channel liquidity, or use a provider | Routing, channel and provider costs depend on the setup | Settled Lightning payment; L402 can verify its payment proof | L402, Aperture and Lightning wallet/node APIs |
+
+USDC aims to track the US dollar, making dollar-denominated budgets easier to manage than balances in a floating-price asset. That introduces issuer and redemption dependencies. Circle can block addresses from sending or receiving USDC; its [USDC terms](https://www.circle.com/legal/usdc-terms) describe the restrictions and distinguish EEA holders. A stablecoin does not eliminate pricing, custody or access risk.
+
+### Atto: direct tiny payments with bounded wallet access
+
+Atto supports nine decimal places and charges no protocol transaction fee. Direct transfers need neither a separate gas token nor payment-channel funding. That makes it worth evaluating for individual API calls, data lookups and tool actions where the service accepts ATTO. The [technical whitepaper](/docs/whitepaper/technical) explains its computational work, voting and infrastructure costs.
+
+[Atto MCP](/build/mcp) gives an assistant wallet operations, starts read-only, and requires local approval to enable spending with [per-payment and rolling spending caps](/docs/integration/mcp#approve-a-spending-allowance). Its allowance controls constrain payments through that wallet profile; they do not constrain arbitrary programs with unrestricted access to the same computer. The [CLI](/build/cli), [N8N integration](/build/n8n) and [Commons libraries](/build/commons) serve other application shapes.
+
+The boundary matters. The CLI and MCP packages are in beta. A wallet tool that sends ATTO does not automatically negotiate an API price, match payment to an order, or deliver the purchased response. Our [micropayment-rails roadmap](/docs/roadmap#phase-7-micropayment-rails) still lists the x402-style flow and paid demonstration endpoint as planned work.
+
+For production, review our [remote-node trust assumptions](/docs/whitepaper/technical#privacy-and-the-observation-boundary) and [security and remediation evidence](/docs/whitepaper/technical#implementation-and-audit-evidence). Our disclosed reviews were internal, and the disclosure leaves gaps in evidence that fixes reached deployed software.
+
+Atto fits developers who want small direct transfers, can work with ATTO-denominated balances, and can implement the service's payment logic. If a working paid-HTTP integration is the immediate requirement, compare that remaining work with the published x402 and L402 tooling below. ATTO's exchange rate can move, and funding or converting it can have separate costs.
+
+### Nano: feeless transfers with community agent integrations
+
+Nano also offers transfers without a protocol fee. Its [protocol overview](https://docs.nano.org/what-is-nano/overview/) explains account chains, representative voting and computational work. A confirmed send creates a receivable; a receive makes it spendable.
+
+Alongside [RPC and wallet interfaces](https://docs.nano.org/integration-guides/), [Nano's agent page](https://nano.org/agents) links community x402 client/server tooling, and [Nano Hub](https://hub.nano.org/developer-tools/ai/299) lists MCP integrations. These can supply agent and paid-HTTP interfaces; check the supported client, server, network and versions.
+
+Nano's agent page notes that the linked community implementation returns a block hash without explicitly waiting for confirmation. Its [security notes](https://github.com/x402nano/exact#security-notes-) warn of limited production deployment and recommend testing with small amounts. Check confirmation and failed-delivery recovery. For custom wallet integrations, the internal node wallet is unsupported for production; use third-party or custom key management.
+
+Nano fits services accepting XNO and developers evaluating its community agent tools. XNO has a floating exchange rate. Work, hosting and key-management costs remain, whether operated internally or provided by someone else.
+
+### USDC on Base: dollar pricing with an HTTP payment path
+
+USDC on Base is a useful candidate when the service prices in dollars and supports the corresponding x402 payment option. The agent can authorize a payment as part of an HTTP exchange instead of requiring a separate checkout at each step. The [x402 buyer quickstart](https://docs.x402.org/getting-started/quickstart-for-buyers) shows the client integration path.
+
+Base transactions carry [network fees](https://docs.base.org/specifications/transactions/network-fees), including execution and Ethereum data publication. Gas sponsorship or a facilitator can move that responsibility away from the agent. Someone still pays it, and a provider may charge for its service. Check the actual commercial terms before assuming a sponsored flow remains economical for extremely small purchases.
+
+Also choose the completion guarantee deliberately. Base distinguishes [sequencer preconfirmation, L2 inclusion and later Ethereum settlement stages](https://docs.base.org/specifications/transactions/transaction-finality). A quick acknowledgement can be useful without providing the same guarantee as a later stage. A seller's decision to return a response belongs in that discussion.
+
+This option fits applications that value dollar-denominated payments and the available x402 tooling. Its costs include accepting dependencies on the issuer, network infrastructure and any chosen facilitator. Ordinary transfers within Base should not be confused with withdrawing assets to Ethereum.
+
+### USDC on Solana: dollar payments with a different operating model
+
+USDC on Solana addresses the same denomination requirement through another network. x402's [network and token support](https://docs.x402.org/core-concepts/network-and-token-support) describes supported configurations; verify that the buyer, seller and facilitator support the same combination. An agent already using Solana may benefit from keeping its payments within that environment.
+
+Solana charges transaction fees in SOL. Its [payment documentation](https://solana.com/docs/payments/how-payments-work) explains that a separate fee payer can cover them, so the agent need not always manage SOL itself. Sending a token to a new recipient can also involve creating a token account. That requires a [refundable storage deposit](https://solana.com/docs/tokens/basics/create-token-account), separate from the transaction fee. Existing recipient accounts do not need that setup for every payment.
+
+[On closure](https://solana.com/docs/tokens/basics/close-account), the account owner or close authority chooses the refund destination; the original payer does not automatically recover it.
+
+Solana also exposes different [commitment levels](https://solana.com/docs/rpc#configuring-state-commitment): processed, confirmed and finalized. Check what the integration actually waits for. A response observed at an early stage should not silently become a claim about final settlement.
+
+This option fits services using Solana USDC and compatible payment tooling. The tradeoffs include fee-payer arrangements, recipient-account setup and infrastructure availability, alongside the same USDC issuer considerations. Keep first-payment setup costs separate from the cost of subsequent calls.
+
+### Bitcoin Lightning: repeated payments through funded channels
+
+Lightning moves bitcoin through payment channels rather than recording every small payment as a separate Bitcoin base-layer transaction. For services already accepting bitcoin, that can support repeated small payments with an existing API access mechanism.
+
+[L402](https://docs.lightning.engineering/the-lightning-network/l402/l402) combines a Lightning invoice with an access token. Paying the invoice reveals a proof that the client can present with the token. [Aperture](https://docs.lightning.engineering/lightning-network-tools/aperture) provides a reverse-proxy implementation for putting that mechanism in front of services.
+
+Its operating requirements deserve equal attention. Sending requires outbound capacity; receiving requires inbound capacity. Lightning Labs' [liquidity guide](https://docs.lightning.engineering/the-lightning-network/liquidity/how-to-get-inbound-capacity-on-the-lightning-network) explains the funding and routing considerations. Channel operations can incur Bitcoin network fees, routed payments can incur routing fees, and a provider may add its own charges. A usable route and sufficient liquidity remain necessary.
+
+Lightning fits bitcoin-denominated services and developers willing to operate that infrastructure or choose a provider. Self-managed channels bring liquidity and availability work. A custodial service can simplify the experience while adding reliance on that custodian. Bitcoin's dollar value also moves; using sats as the payment unit does not create a dollar peg.
+
+## Wallet access and paid API access solve different steps
+
+MCP connects an assistant to tools. A payment network transfers value. HTTP payment protocols describe how a service requests payment and how a client proves authorization or payment. An application may use all three.
+
+For example, [x402](https://docs.x402.org/core-concepts/http-402) uses an HTTP 402 response to communicate payment requirements. The client retries with a payment payload; the integration verifies the authorization and handles settlement according to the scheme. A payment authorization and an onchain transfer need not happen at the same moment: batch settlement can move authorized payments onchain later. L402 uses a Lightning payment proof to authorize access.
+
+For every option, establish what the service accepts, what the agent can sign, who covers costs, and which event permits delivery. Enforce spending limits in the wallet or payment service, outside the agent's prompt. Keep the purchase reference, payment identifier and delivered result connected. After a timeout, check whether payment succeeded before creating another one.
+
+## Measure the wait for the answer
+
+The number that matters to an agent is often the interval between requesting a resource and receiving a usable response. That includes wallet preparation, payment negotiation, signing, publication, the chosen confirmation boundary and service execution. Track failures and slower requests alongside the median.
+
+Our [live metrics](/metrics#confirmation-speed) describe node-observed confirmation intervals. They do not measure that whole interaction. The public [Atto, Nano and RSNano benchmarks](https://github.com/rotilho/feeless-benchmarks) include reproduction commands, raw samples, manifests and percentile results. They are controlled, single-host, one-voter implementation measurements, not a mainnet capacity test or a speed comparison with Base, Solana and Lightning.
+
+Use those measurements to investigate the implementations, then test the complete flow your application will run. Comparing a local benchmark, a sequencer acknowledgement and a routed Lightning payment as if they measured the same event would hide the decision you need to make.
+
+## Which payment option fits your AI agent?
+
+If the service already accepts one of these options, begin there. Supporting a network that the seller cannot receive does not complete the purchase.
+
+For dollar-denominated budgets and an available x402 integration, investigate USDC on Base or Solana, including the actual facilitator terms and completion policy. For bitcoin services with an L402 interface, investigate Lightning and how liquidity and custody are handled.
+
+Evaluate Atto when you want separate payments without protocol fees, locally approved wallet spending limits, and control over the paid-service implementation. Evaluate Nano for feeless transfers with community x402 or MCP tooling. For either, test the complete payment, confirmation and delivery path.
+
+You may also find that a prepaid service balance is simpler for a particular workload. Funding once and metering calls internally can reduce repeated payment work, while introducing a balance held with that provider.
+
+To evaluate Atto, start with the [integration guides](/docs/integration), fund a small wallet through the [faucet](/faucet), and test the payment and recovery path. The useful result is a payment flow that fits the task, respects the agent's budget and delivers the response the user needed.
