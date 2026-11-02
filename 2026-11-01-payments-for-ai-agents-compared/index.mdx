@@ -1,12 +1,13 @@
 ---
 slug: payments-for-ai-agents-compared
 title: "Payments for AI agents: Atto, Nano, USDC and Lightning compared"
-description: Compare Atto, Nano, USDC on Base and Solana, and Bitcoin Lightning for agent payments, including fees, funding, confirmation and available integrations.
+description: Rated comparison of Atto, Nano, USDC on Base and Solana, and Lightning for agent micropayments, with a $0.001 cost example and settlement guarantees.
 authors: [rotilho]
 image: ./image-social.jpg
 ---
 
 import IdealImage from "@theme/IdealImage";
+import AgentPaymentComparison from "@site/src/components/AgentPaymentComparison";
 
 <IdealImage
   img={require('./image.jpg')}
@@ -23,19 +24,61 @@ We build Atto for small, direct payments. This comparison follows each option fr
 
 <!-- truncate -->
 
-*Technical capabilities checked on November 1, 2026. Fees and provider support can change; the linked sources describe the underlying mechanisms.*
+*Technical capabilities and pricing checked on November 2, 2026. Fees and provider support can change; the linked sources describe the underlying mechanisms.*
 
 ## Compare the payment you need to make
 
-For an API call, a useful starting point is the smallest unit you intend to charge for. A service selling thousands of tiny responses has different requirements from an agent making an occasional larger purchase.
+The comparison below focuses on **$0.001 API calls paid separately**. The USDC economics scores use Coinbase's CDP Facilitator with `exact`, after its monthly free allowance. Other providers and batching can change those scores. Atto and Nano are assessed on direct protocol transfers; Lightning depends on the route and channel setup. These are payment-charge comparisons, not total operating-cost estimates.
 
-| Option | Asset and funding | Payment costs | Completion to check | Agent integration path |
-| --- | --- | --- | --- | --- |
-| **Atto** | Fund with ATTO; its dollar value can change | No protocol fee; work and infrastructure still consume resources | Confirmed Send; separate receipt makes funds spendable | MCP, CLI and APIs; paid-request application logic still needed |
-| **Nano** | Fund with XNO; its dollar value can change | No protocol fee; work and infrastructure still consume resources | Confirmed send; separate receive makes funds spendable | Community x402 and MCP tools, plus RPC/wallet interfaces |
-| **USDC on Base** | Fund with USDC; ETH pays network gas, potentially through a sponsor | Execution and Ethereum data fees; provider fees may apply | Choose between sequencer confirmation and stronger settlement stages | x402 integrations, wallets and facilitators |
-| **USDC on Solana** | Fund with USDC; a fee payer supplies SOL | Transaction fees; recipient token-account setup may require storage funding | Choose the required commitment level | x402 integrations, wallets and facilitators |
-| **Bitcoin Lightning** | Fund with bitcoin and provision channel liquidity, or use a provider | Routing, channel and provider costs depend on the setup | Settled Lightning payment; L402 can verify its payment proof | L402, Aperture and Lightning wallet/node APIs |
+<AgentPaymentComparison rows={[
+  {
+    id: 'atto', name: 'Atto', detail: 'Direct ATTO transfers',
+    economics: {score: 5, note: 'No protocol transfer fee'},
+    pricing: {score: 1, note: 'ATTO has a floating dollar value'},
+    readiness: {score: 2, note: 'Wallet tools available; paid-HTTP flow planned'},
+    settlement: <><strong>Confirmed Send</strong><p>Event-driven voting; no extra block-depth wait. A separate receipt makes funds spendable.</p></>,
+  },
+  {
+    id: 'nano', name: 'Nano', detail: 'Direct XNO transfers',
+    economics: {score: 5, note: 'No protocol transfer fee'},
+    pricing: {score: 1, note: 'XNO has a floating dollar value'},
+    readiness: {score: 3, note: 'Community x402 and MCP implementations'},
+    settlement: <><strong>Confirmed send</strong><p>Representative voting; receive separately to credit the balance. A returned hash alone is insufficient.</p></>,
+  },
+  {
+    id: 'base', name: 'USDC on Base', detail: 'CDP exact, paid tier',
+    economics: {score: 1, note: '$0.001 fee consumes a $0.001 sale'},
+    pricing: {score: 5, note: 'USD-targeted asset; issuer conditions apply'},
+    readiness: {score: 5, note: 'Documented x402 client/server stack'},
+    settlement: <><strong>~2 s L2 inclusion</strong><p>~200 ms preconfirmation is weaker; Ethereum batch finality is ~20 min. <a href="https://docs.base.org/specifications/transactions/transaction-finality">Guarantees differ.</a></p></>,
+  },
+  {
+    id: 'solana', name: 'USDC on Solana', detail: 'CDP exact, paid tier',
+    economics: {score: 1, note: 'Same CDP tariff for individual settlements'},
+    pricing: {score: 5, note: 'USD-targeted asset; issuer conditions apply'},
+    readiness: {score: 5, note: 'Documented x402 client/server stack'},
+    settlement: <><strong>~150 ms finality target</strong><p><a href="https://solana.com/upgrades/alpenglow">Alpenglow consensus target</a>, not measured wallet-to-API delivery time.</p></>,
+  },
+  {
+    id: 'lightning', name: 'Bitcoin Lightning', detail: 'Funded payment channels',
+    economics: {score: 3, note: 'Routing fees and channel capital vary'},
+    pricing: {score: 1, note: 'Bitcoin has a floating dollar value'},
+    readiness: {score: 5, note: 'L402 with the Aperture proxy'},
+    settlement: <><strong>When the routed payment completes</strong><p>No new Bitcoin block per payment. Route availability and liquidity affect the wait.</p></>,
+  },
+]} />
+
+**Rating key:** economics scores are 5 for no protocol transfer fee, 3 for route-dependent costs, and 1 when the stated gateway fee consumes the sale. Dollar-budget scores distinguish a USD-targeted asset (5) from a floating asset (1). HTTP-tool scores distinguish provider-maintained paid-HTTP stacks (5), early community implementations whose maintainers warn of limited production deployment (3), and wallet tools with a planned paid-HTTP flow (2). They do not certify production reliability.
+
+## When a $1 workload leaves nothing to run the service
+
+**1,000 calls at $0.001 each bring in $1.** Suppose each call needs one successful CDP `exact` settlement and the monthly free allowance has already been used. At **$0.001 per onchain transaction**, those calls incur **$1 in facilitator fees**, leaving **$0 before serving the requests**. The first 1,000 monthly transactions are free; verification is also free. [CDP pricing](https://docs.cdp.coinbase.com/x402/seller/facilitator)
+
+The fee already covers settlement gas. It should not be added to a second Base gas bill. CDP's [FAQ](https://docs.cdp.coinbase.com/x402/support/faq) explicitly identifies the zero-margin problem at this price. It applies to individual settlements on both Base and Solana through that service.
+
+Under that tariff, separately settled calls priced at or below $0.001 leave no revenue to cover service costs once the allowance is exhausted. Below $0.001, the processing fee alone exceeds revenue. Larger small payments—what we mean here by **mini payments**—have more room: the same fee takes 10% of a $0.01 sale or 1% of a $0.10 sale, before other costs.
+
+Atto and Nano deduct no protocol transfer fee from 1,000 direct transfers. Funding, conversion, computational work and infrastructure still cost resources. Batching or a different facilitator can also improve USDC economics, but changes the payment setup being compared.
 
 USDC aims to track the US dollar, making dollar-denominated budgets easier to manage than balances in a floating-price asset. That introduces issuer and redemption dependencies. Circle can block addresses from sending or receiving USDC; its [USDC terms](https://www.circle.com/legal/usdc-terms) describe the restrictions and distinguish EEA holders. A stablecoin does not eliminate pricing, custody or access risk.
 
@@ -63,11 +106,11 @@ Nano fits services accepting XNO and developers evaluating its community agent t
 
 USDC on Base is a useful candidate when the service prices in dollars and supports the corresponding x402 payment option. The agent can authorize a payment as part of an HTTP exchange instead of requiring a separate checkout at each step. The [x402 buyer quickstart](https://docs.x402.org/getting-started/quickstart-for-buyers) shows the client integration path.
 
-Base transactions carry [network fees](https://docs.base.org/specifications/transactions/network-fees), including execution and Ethereum data publication. Gas sponsorship or a facilitator can move that responsibility away from the agent. Someone still pays it, and a provider may charge for its service. Check the actual commercial terms before assuming a sponsored flow remains economical for extremely small purchases.
+Direct Base transfers carry [execution and Ethereum publication fees](https://docs.base.org/specifications/transactions/network-fees). Base's illustrative calculation puts a 200,000-gas transaction at $0.002 in L2 execution fees when ETH is $2,000, before publication or priority fees. That is a stated example, not a measured USDC-transfer quote. The hosted CDP route instead covers gas within its own tariff; sponsorship changes the payer, not the underlying economics.
 
-Also choose the completion guarantee deliberately. Base distinguishes [sequencer preconfirmation, L2 inclusion and later Ethereum settlement stages](https://docs.base.org/specifications/transactions/transaction-finality). A quick acknowledgement can be useful without providing the same guarantee as a later stage. A seller's decision to return a response belongs in that discussion.
+Base distinguishes [~200 ms sequencer preconfirmation, ~2 s L2 inclusion, ~2 min Ethereum batch inclusion and ~20 min batch finality](https://docs.base.org/specifications/transactions/transaction-finality). These are different assurances. A service returning a response after an early acknowledgement accepts a different risk than one waiting for Ethereum finality; ordinary Base sends do not face the bridge-withdrawal waiting period.
 
-This option fits applications that value dollar-denominated payments and the available x402 tooling. Its costs include accepting dependencies on the issuer, network infrastructure and any chosen facilitator. Ordinary transfers within Base should not be confused with withdrawing assets to Ethereum.
+This option fits dollar-denominated services using existing x402 tooling, with prices large enough for their payment costs. Under CDP's paid per-settlement tariff, a $0.001 purchase cannot fund the service delivering it. That is an economic limit of this setup, rather than a protocol rule forbidding tiny USDC amounts.
 
 ### USDC on Solana: dollar payments with a different operating model
 
@@ -77,9 +120,9 @@ Solana charges transaction fees in SOL. Its [payment documentation](https://sola
 
 [On closure](https://solana.com/docs/tokens/basics/close-account), the account owner or close authority chooses the refund destination; the original payer does not automatically recover it.
 
-Solana also exposes different [commitment levels](https://solana.com/docs/rpc#configuring-state-commitment): processed, confirmed and finalized. Check what the integration actually waits for. A response observed at an early stage should not silently become a claim about final settlement.
+Solana's October 2026 [Alpenglow update](https://solana.com/upgrades/alpenglow) targets roughly 150 ms consensus finality and makes `confirmed` and `finalized` describe the same state. This is a protocol target, not an API-response guarantee. Older guides describing the earlier finality model should not determine a new integration's settlement policy.
 
-This option fits services using Solana USDC and compatible payment tooling. The tradeoffs include fee-payer arrangements, recipient-account setup and infrastructure availability, alongside the same USDC issuer considerations. Keep first-payment setup costs separate from the cost of subsequent calls.
+This option fits Solana USDC services and compatible tooling. Its [native transaction fee](https://solana.com/docs/core/fees) starts at 5,000 lamports per signature, plus any priority fee. CDP's hosted tariff remains a separate operating choice: fast consensus does not remove a facilitator's per-settlement charge. Recipient setup and issuer dependencies remain relevant.
 
 ### Bitcoin Lightning: repeated payments through funded channels
 
@@ -95,15 +138,17 @@ Lightning fits bitcoin-denominated services and developers willing to operate th
 
 MCP connects an assistant to tools. A payment network transfers value. HTTP payment protocols describe how a service requests payment and how a client proves authorization or payment. An application may use all three.
 
-For example, [x402](https://docs.x402.org/core-concepts/http-402) uses an HTTP 402 response to communicate payment requirements. The client retries with a payment payload; the integration verifies the authorization and handles settlement according to the scheme. A payment authorization and an onchain transfer need not happen at the same moment: batch settlement can move authorized payments onchain later. L402 uses a Lightning payment proof to authorize access.
+For example, [x402](https://docs.x402.org/core-concepts/http-402) uses an HTTP 402 response to communicate payment requirements. The client retries with a payment payload; the integration verifies authorization and handles settlement according to the scheme. L402 uses a Lightning payment proof to authorize access.
+
+Batch settlement can move authorized payments onchain later and spread costs across calls. It also introduces channel funding and settlement lifecycle work. CDP currently supports it on EVM, but its `createX402Server` helper does not register that scheme; it needs a separate supported integration. [Current scheme support](https://docs.cdp.coinbase.com/x402/support/faq)
 
 For every option, establish what the service accepts, what the agent can sign, who covers costs, and which event permits delivery. Enforce spending limits in the wallet or payment service, outside the agent's prompt. Keep the purchase reference, payment identifier and delivered result connected. After a timeout, check whether payment succeeded before creating another one.
 
-## Measure the wait for the answer
+## Settlement time and response time
 
-The number that matters to an agent is often the interval between requesting a resource and receiving a usable response. That includes wallet preparation, payment negotiation, signing, publication, the chosen confirmation boundary and service execution. Track failures and slower requests alongside the median.
+An agent waits from requesting a resource to receiving a usable response. That includes wallet preparation, negotiation, signing, publication, the chosen settlement boundary and service execution. A fast authorization, a finalized transfer and a delivered result are three different events.
 
-Our [live metrics](/metrics#confirmation-speed) describe node-observed confirmation intervals. They do not measure that whole interaction. The public [Atto, Nano and RSNano benchmarks](https://github.com/rotilho/feeless-benchmarks) include reproduction commands, raw samples, manifests and percentile results. They are controlled, single-host, one-voter implementation measurements, not a mainnet capacity test or a speed comparison with Base, Solana and Lightning.
+For Atto, wait for a verified confirmed Send before delivery; the recipient's separate receipt makes the balance spendable. Our [network measurements](/metrics#confirmation-speed) cover node-observed confirmation, not the whole purchase. The public [Atto, Nano and RSNano benchmarks](https://github.com/rotilho/feeless-benchmarks) provide reproduction commands, raw samples and manifests. Their single-host, one-voter scope cannot establish mainnet capacity or rank Base, Solana and Lightning.
 
 Use those measurements to investigate the implementations, then test the complete flow your application will run. Comparing a local benchmark, a sequencer acknowledgement and a routed Lightning payment as if they measured the same event would hide the decision you need to make.
 
