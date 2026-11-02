@@ -48,7 +48,7 @@ Timings come from different network measurements and do not measure complete API
     economics: {score: 5, note: 'No protocol transfer fee'},
     pricing: {score: 1.0, note: '99.1% below ATH'},
     integration: {
-      score: 5,
+      score: 4,
       tools: <>Community <a href="https://github.com/Feeless402/feeless402">CLI/MCP</a>.</>,
       backend: <>Public RPC options; no own node required.</>,
       paidApi: <>Community x402; check confirmation.</>,
@@ -60,9 +60,9 @@ Timings come from different network measurements and do not measure complete API
     economics: {score: 1, note: '$0.001 fee on a $0.001 sale'},
     pricing: {score: 5, note: 'Stablecoin'},
     integration: {
-      score: 5,
-      tools: <>x402 client/server SDKs.</>,
-      backend: <>Hosted CDP; wallet and credentials.</>,
+      score: 4.25,
+      tools: <><a href="https://github.com/coinbase/agentkit">AgentKit</a>; x402 SDKs.</>,
+      backend: <>Hosted CDP; account policies configured.</>,
       paidApi: <>Available through x402 exact.</>,
     },
     settlement: {milliseconds: 290.3, label: '290 ms', note: <>L2 preconfirmation average. Aug 12, 2026.</>},
@@ -72,9 +72,9 @@ Timings come from different network measurements and do not measure complete API
     economics: {score: 1, note: 'Same CDP per-settlement fee'},
     pricing: {score: 5, note: 'Stablecoin'},
     integration: {
-      score: 5,
-      tools: <>x402 client/server SDKs.</>,
-      backend: <>Hosted CDP; wallet and token accounts.</>,
+      score: 4.25,
+      tools: <><a href="https://github.com/coinbase/agentkit">AgentKit</a>; x402 SDKs.</>,
+      backend: <>Hosted CDP; account policies configured.</>,
       paidApi: <>Available through x402 exact.</>,
     },
     settlement: {milliseconds: 399.254, label: '399 ms', note: <>Rooted-finality average. Nov 2, 2026.</>},
@@ -84,16 +84,16 @@ Timings come from different network measurements and do not measure complete API
     economics: {score: 3, note: 'Routing and provider fees vary'},
     pricing: {score: 3.5, note: '38.1% below ATH'},
     integration: {
-      score: 5,
-      tools: <>Labs' <a href="https://github.com/lightninglabs/lnget">lnget CLI/MCP</a>; <a href="https://github.com/getAlby/mcp/">Alby MCP</a>.</>,
-      backend: <>Wallet provider or own node.</>,
+      score: 3.5,
+      tools: <><a href="https://github.com/getAlby/mcp/">Alby MCP</a> + <a href="https://github.com/getAlby/hub">Alby Hub</a>.</>,
+      backend: <>Self-operated wallet backend.</>,
       paidApi: <>L402 and <a href="https://github.com/getAlby/paidmcp">paid MCP</a> available.</>,
     },
     settlement: {milliseconds: 1860, label: '1.86 s', note: <>Provider-reported settlement average. 2026 pilot.</>},
   },
 ]} />
 
-All five offer packaged agent access without operating your own node; paid-API support varies as shown. **Price vs ATH** measures position relative to the dollar all-time high, not dollar stability. Prices are a November 2 snapshot; stablecoins receive 5 by convention.
+Agent integration scores are provisional, with setup and maintenance carrying 60% of the weight. They assess the named tools and backends. **Price vs ATH** measures position relative to the dollar all-time high, not dollar stability. Prices are a November 2 snapshot; stablecoins receive 5 by convention.
 
 ## When a $1 workload leaves nothing to run the service
 
@@ -148,7 +148,22 @@ To try Atto, start with the [integration guides](/docs/integration), fund a smal
 
 **Comparison scope.** The economics scores compare individual $0.001 payments: direct Atto/Nano transfers, CDP `exact` settlements after the monthly free allowance on Base/Solana, and Lightning payments through funded channels. Economics scores are 5 for no protocol transfer fee, 3 for route-dependent costs and 1 when the stated gateway fee consumes the sale. They are not total operating-cost estimates or production-reliability ratings.
 
-**Agent integration.** A 5 means a packaged agent interface or SDK has a documented public or hosted backend path, without operating a node or writing a custom adapter. All five options have such a path. Lower scores would indicate more custom code or infrastructure work. This assesses agent access rather than paid-API readiness, reliability or identical setup effort. Funding, credentials and configuration still apply.
+**Agent integration.** These provisional editorial scores assess how easy a named agent-wallet integration is to get working and maintain. The starting point is a funded wallet: obtaining funds is excluded, while configuring the integration and operating its required backend are included. This is a documentation and code assessment, not a runtime usability test or a production-reliability rating. Seller paid-API readiness remains a separate field.
+
+Setup and maintenance each contribute 1.5 points; the ready agent interface and externally enforced spending controls each contribute 0.5. Clear payment outcomes and safe recovery each contribute another 0.5, combined in the last criterion below. Each individual criterion—including outcomes and recovery separately—receives full, half or no credit against its maximum. The setup and maintenance judgments are provisional.
+
+| Evaluated integration path | Setup /1.5 | Maintenance /1.5 | Agent interface /0.5 | Spending controls /0.5 | Results & recovery /1 | Total /5 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| ATTO — Atto MCP | 1.5 | 1.5 | 0.5 | 0.5 | 1 | **5** |
+| XNO — Feeless402 MCP | 1.5 | 1.5 | 0.5 | 0 | 0.5 | **4** |
+| USDC/Base — AgentKit | 1.5 | 1.5 | 0.5 | 0.5 | 0.25 | **4.25** |
+| USDC/Solana — AgentKit | 1.5 | 1.5 | 0.5 | 0.5 | 0.25 | **4.25** |
+| BTC/Lightning — Alby MCP + Hub | 0.75 | 0.75 | 0.5 | 0.5 | 1 | **3.5** |
+
+- **Atto MCP:** public backend defaults, operator-approved spending caps, structured payment states and durable request-ID reconciliation. The reviewed [spending checks](https://github.com/attocash/integrations/blob/main/atto-cli/src/spending/ledger.ts) and [payment workflow](https://github.com/attocash/integrations/blob/main/atto-cli/src/spending/payments.ts) support the capability scores. CLI/MCP are beta.
+- **Feeless402 MCP:** public RPC defaults keep setup and backend operation light. Its [tool price cap](https://github.com/Feeless402/feeless402/blob/4dd6d7abca767981552bc74e88f7f434b760ea0d/nano_pay/mcp_server.py#L107-L118) is an agent-controlled argument, not an owner-enforced budget. The selected [payment flow](https://github.com/Feeless402/feeless402/blob/4dd6d7abca767981552bc74e88f7f434b760ea0d/nano_pay/x402.py) has partial confirmation reporting and recovery coverage.
+- **AgentKit on Base and Solana:** these scores assume separately configured CDP account policies, supported by the [EVM](https://github.com/coinbase/cdp-sdk/blob/3a566571c8c9d7c1b00eb3a47e6a7755ab786fe7/typescript/packages/cdp-sdk/src/policies/evmSchema.ts) and [Solana](https://github.com/coinbase/cdp-sdk/blob/3a566571c8c9d7c1b00eb3a47e6a7755ab786fe7/typescript/packages/cdp-sdk/src/policies/solanaSchema.ts) policy engines. The reviewed [ERC20](https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/erc20/erc20ActionProvider.ts) and [SPL](https://github.com/coinbase/agentkit/blob/f2f3e8c11a91d56a17979a229a172ba6e61a85c2/typescript/agentkit/src/action-providers/spl/splActionProvider.ts) transfer tools return identifiers but need application work for complete outcome handling and uncertain retries. The policies establish permissions or per-transaction limits, not cumulative daily budgets.
+- **Alby MCP + Hub:** wallet budgets, payment lookup and same-invoice duplicate protection earn capability credit. The assessed [Hub setup](https://guides.getalby.com/user-guide/alby-hub/faq/where-is-alby-hub-physically-located) is self-operated, so backend setup and maintenance receive partial credit. [Payment handling](https://github.com/getAlby/hub/blob/master/transactions/transactions_service.go) and [recovery tests](https://github.com/getAlby/hub/blob/master/transactions/payments_test.go) support the results/recovery score. This does not grade every Lightning wallet or provider.
 
 **Layer-confirmation bars.** The shortest listed duration receives 5 and the longest receives 1. Intermediate values use `5 − 4 × (duration − shortest) ÷ (longest − shortest)`, rounded to one decimal. If all listed durations are identical, each receives 5. The resulting indices are Atto 5, Nano 4.6, Base 4.7, Solana 4.4 and Lightning 1. Different timing boundaries and assurances mean these are source-specific observations rather than a controlled network ranking.
 
