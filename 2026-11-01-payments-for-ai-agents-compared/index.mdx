@@ -93,7 +93,7 @@ Timings come from different network measurements and do not measure complete API
   },
 ]} />
 
-Agent integration scores are provisional, with setup and maintenance carrying 60% of the weight. They assess the named tools and backends. **Price vs ATH** measures position relative to the dollar all-time high, not dollar stability. Prices are a November 2 snapshot; stablecoins receive 5 by convention.
+**Total score** averages the four displayed ratings equally. Agent integration scores are provisional, with setup and maintenance carrying 60% of the weight. They assess the named tools and backends. **Price vs ATH** measures position relative to the dollar all-time high, not dollar stability. Prices are a November 2 snapshot; stablecoins receive 5 by convention.
 
 ## When a $1 workload leaves nothing to run the service
 
@@ -145,6 +145,8 @@ To try Atto, start with the [integration guides](/docs/integration), fund a smal
 
 <details>
 <summary>Rating rules, measurement sources and implementation notes</summary>
+
+**Total score.** The second column is the equal-weight average of tiny-transfer economics, price vs ATH, agent integration and layer confirmation. It uses the displayed component ratings, including the confirmation rating rounded to one decimal, then rounds the average to one decimal. All four ratings are required; an unscored component leaves the total unscored.
 
 **Comparison scope.** The economics scores compare individual $0.001 payments: direct Atto/Nano transfers, CDP `exact` settlements after the monthly free allowance on Base/Solana, and Lightning payments through funded channels. Economics scores are 5 for no protocol transfer fee, 3 for route-dependent costs and 1 when the stated gateway fee consumes the sale. They are not total operating-cost estimates or production-reliability ratings.
 
