@@ -1,7 +1,7 @@
 ---
 slug: payments-for-ai-agents-compared
 title: "Payments for AI agents: Atto, Nano, USDC and Lightning compared"
-description: "Compare Atto, Nano, USDC and Lightning for agent payments: fees, observed finality, first-party and community tools, backend setup and price-versus-ATH scores."
+description: "Compare Atto, Nano, USDC and Lightning for agent payments: fees, layer confirmation times, agent integration ratings, backend setup and price-versus-ATH scores."
 authors: [rotilho]
 image: ./image-social.jpg
 ---
@@ -35,7 +35,7 @@ The comparison below focuses on **$0.001 API calls paid separately**. The USDC e
 
 For **payment acceptance**, Atto and Nano need a confirmed Send with the correct recipient and amount. The service can deliver the purchase then; a later Receive makes the merchant's funds spendable.
 
-Agent tools, node access and paid-API support are separate integration decisions. The table identifies all three instead of assigning one complexity score. These are actual network observations, but they do not measure the same journey or establish queue-inclusive payment times. The bars are an index of the listed durations, whose measurement boundaries and finality assurances differ.
+The agent integration bar scores the easiest documented packaged agent or SDK path. The details separate tools, backend access and paid-API support. For timing, we use payment acceptance on the layer where the payment runs: Base's L2 receipt and Lightning's off-chain settlement do not wait for their underlying chain's finality. These actual network observations have different timing boundaries and assurances; the bars do not establish queue-inclusive payment times.
 
 <AgentPaymentComparison rows={[
   {
@@ -43,6 +43,7 @@ Agent tools, node access and paid-API support are separate integration decisions
     economics: {score: 5, note: 'No protocol transfer fee'},
     pricing: {score: 1.7, note: '82.1% below ATH; provider quote Nov 2, 02:50 UTC'},
     integration: {
+      score: 5,
       tools: <>First-party <a href="/build/mcp">MCP</a>, <a href="/build/cli">CLI</a> and <a href="/build/n8n">n8n</a>. CLI/MCP are beta.</>,
       backend: <>Public Node and Worker defaults; no node hosting required.</>,
       paidApi: <>Custom seller logic today; x402 flow planned.</>,
@@ -54,6 +55,7 @@ Agent tools, node access and paid-API support are separate integration decisions
     economics: {score: 5, note: 'No protocol transfer fee'},
     pricing: {score: 1.0, note: '99.1% below ATH; provider quote Nov 2, 09:58 UTC'},
     integration: {
+      score: 5,
       tools: <>Community <a href="https://github.com/Feeless402/feeless402">CLI/MCP</a> and x402 integrations.</>,
       backend: <>Public RPC defaults in Feeless402; x402nano requires a configured RPC endpoint. No owned node required.</>,
       paidApi: <>Community x402; validate confirmation and recovery.</>,
@@ -65,17 +67,19 @@ Agent tools, node access and paid-API support are separate integration decisions
     economics: {score: 1, note: '$0.001 fee consumes a $0.001 sale'},
     pricing: {score: 5, note: 'Stablecoin: fixed 5/5 by this scoring rule'},
     integration: {
+      score: 5,
       tools: <>x402 client/server SDKs and Coinbase's facilitator.</>,
       backend: <>Hosted CDP; funded wallet, credentials and billing. No Base node hosting required.</>,
       paidApi: <>x402 exact support; check per-settlement costs.</>,
     },
-    settlement: {milliseconds: 1238083.5998859257, label: '20 min 38 s observed L1 finality', note: <>Nov 2, 2026; one USDC transfer, observed L2 inclusion to Ethereum-backed finality. Five-second polling. Earlier acceptance has different guarantees. <Link to="pathname:///data/agent-payments-confirmation-2026-11-02.json">Observation data</Link>.</>},
+    settlement: {milliseconds: 290.3, label: '290 ms L2 acceptance average', note: <>Aug 12, 2026; <a href="https://github.com/sircharli3/fillbench-data/blob/7e726d4dd57a232af14bb59ed97b7eb7944fc8da/data/x402/x402-base-settlement.json">FillBench</a>, 50 mainnet USDC self-transfers. Submission to Flashblock receipt: L2 preconfirmation, not irrevocable finality or a complete CDP request.</>},
   },
   {
     id: 'solana', name: 'USDC on Solana', detail: 'CDP exact, paid tier',
     economics: {score: 1, note: 'Same CDP tariff for individual settlements'},
     pricing: {score: 5, note: 'Stablecoin: fixed 5/5 by this scoring rule'},
     integration: {
+      score: 5,
       tools: <>x402 client/server SDKs and Coinbase's facilitator.</>,
       backend: <>Hosted CDP; funded wallet, credentials and token-account setup. No Solana node hosting required.</>,
       paidApi: <>x402 exact support; match buyer, seller and facilitator configuration.</>,
@@ -87,6 +91,7 @@ Agent tools, node access and paid-API support are separate integration decisions
     economics: {score: 3, note: 'Routing fees and channel capital vary'},
     pricing: {score: 3.5, note: '38.1% below ATH; provider quote Nov 2, 09:58 UTC'},
     integration: {
+      score: 5,
       tools: <>Lightning Labs' <a href="https://github.com/lightninglabs/lnget">lnget CLI/MCP</a>; <a href="https://github.com/getAlby/mcp/">Alby MCP</a> also connects to n8n.</>,
       backend: <>Connect a Lightning wallet/provider, or run a node with channel and liquidity management.</>,
       paidApi: <>L402 via lnget/Aperture; <a href="https://github.com/getAlby/paidmcp">paid MCP</a> tooling also exists.</>,
@@ -97,7 +102,9 @@ Agent tools, node access and paid-API support are separate integration decisions
 
 **Economics rating:** 5 for no protocol transfer fee, 3 for route-dependent costs, and 1 when the stated gateway fee consumes the sale. This does not certify production reliability.
 
-**Observed-duration index:** `5 × shortest listed observed duration ÷ this option's observed duration`. The shortest observation receives 5; twice its duration receives 2.5. Labels round to one decimal, with positive scores below 0.1 shown as `<0.1/5`. Different measurement boundaries mean these scores do not rank networks or their security. See the timing scopes below before comparing them.
+**Agent integration rating:** 5 means a packaged agent interface or SDK has a documented public or hosted backend path, without operating a node or writing a custom adapter. Lower scores indicate increasing custom integration or infrastructure work. All five options meet the 5-point criterion through at least one documented path. This assesses available agent access, not paid-API readiness, reliability or identical setup effort; funding, credentials and configuration still apply.
+
+**Observed-duration index:** the shortest listed duration receives 5 and the longest receives 1. Values between them use a linear scale: `5 − 4 × (duration − shortest) ÷ (longest − shortest)`, rounded to one decimal. If all listed durations are identical, each receives 5. Different measurement boundaries mean these scores do not rank networks or their security. See the timing scopes below before comparing them.
 
 **Price vs ATH:** native-asset scores use `1 + 4 × (current USD price ÷ recorded USD all-time high)`, capped at 5 and rounded to one decimal. Closer to the ATH means closer to 5. Stablecoins receive 5 by convention. This measures price position, not dollar stability, volatility or safety.
 
@@ -156,7 +163,7 @@ USDC on Base is a useful candidate when the service prices in dollars and suppor
 
 Direct Base transfers carry [execution and Ethereum publication fees](https://docs.base.org/specifications/transactions/network-fees). Estimate the fee for the actual signed transfer and current network conditions. The hosted CDP route instead covers gas within its own tariff; sponsorship changes the payer, not the underlying economics.
 
-Base distinguishes [sequencer preconfirmation, L2 inclusion and later Ethereum finality](https://docs.base.org/specifications/transactions/transaction-finality). A service returning a response after an early acknowledgement accepts a different risk than one waiting for Ethereum finality. Those stages do not provide a measured submission-to-acceptance time for this USDC flow; queueing and inclusion delays also matter.
+Base distinguishes [sequencer preconfirmation, L2 inclusion and later Ethereum finality](https://docs.base.org/specifications/transactions/transaction-finality). A service returning a response after an early acknowledgement accepts a different risk than one waiting for Ethereum finality. Stage definitions alone do not establish client-to-paid-response latency; measure the chosen integration, including queueing and retries.
 
 This option fits dollar-denominated services using existing x402 tooling, with prices large enough for their payment costs. Under CDP's paid per-settlement tariff, a $0.001 purchase cannot fund the service delivering it. That is an economic limit of this setup, rather than a protocol rule forbidding tiny USDC amounts.
 
@@ -194,7 +201,7 @@ Batch settlement can move authorized payments onchain later and spread costs acr
 
 For every option, establish what the service accepts, what the agent can sign, who covers costs, and which event permits delivery. Enforce spending limits in the wallet or payment service, outside the agent's prompt. Keep the purchase reference, payment identifier and delivered result connected. After a timeout, check whether payment succeeded before creating another one.
 
-## What the confirmation and finality timings measure
+## What the layer confirmation timings measure
 
 For Atto and Nano, a verified confirmed Send is enough for payment acceptance and delivery. Check its destination and amount, and match it to the purchase. The recipient can publish Receive later to make those funds spendable; the buyer should not wait for that operation to get the resource.
 
@@ -204,13 +211,13 @@ The table uses measured live-network observations, with different scopes:
 
 - **Atto:** **158.34 ms for November 1**, measured from node arrival to confirmed storage across two node databases and all account-update types. It is not Send-only or client-to-node round-trip timing. [Metric source](https://gatekeeper.live.application.atto.cash/projections/metrics), [measurement scope](/docs/whitepaper/technical#what-determines-payment-latency).
 - **Nano:** [NanoSpeed](https://nanospeed.info/about) displays **331 ms**, from its latest daily point dated November 1 and its own single-block probes.
-- **Base:** **20 minutes 38 seconds** for one passive observation on November 2. An existing [USDC transfer](https://basescan.org/tx/0xdedc1cc426e864f08444e8bd0e9d3b8da5f3bab7baddf465d01f21575b9d6e04) was first observed in L2 block 53,412,678 at 10:18:23 UTC; the RPC's finalized head first covered that unchanged block at 10:39:01 UTC. The observer polled every five seconds and verified the successful receipt and canonical block hash. This measures observed inclusion through [Ethereum-backed batch finality](https://specs.optimism.io/glossary.html#finalized-l2-head), excluding earlier submission. It is one sample, not an average, sequencer acknowledgement or a complete CDP request.
+- **Base:** **290.3 ms mean** for [FillBench's 50 successful mainnet USDC self-transfers](https://github.com/sircharli3/fillbench-data/blob/7e726d4dd57a232af14bb59ed97b7eb7944fc8da/data/x402/x402-base-settlement.json), measured in US-east on August 12, 2026. The timer runs from transaction submission to a Flashblock receipt. This is historical mainnet L2 preconfirmation, not an advertised block interval, full sealed-L2 inclusion, irrevocable finality or a measured CDP request. [Base's documentation](https://docs.base.org/specifications/flashblocks) identifies these as preconfirmed receipts. The published result supplies its aggregate and method, but no individual timings or measurement harness.
 - **Solana:** [OpenChainBench](https://openchainbench.com/benchmarks/l1-finality) reports a **399.254 ms mean** across **402,618 observations** in its 24-hour window as of November 2 at 10:09 UTC. Its [collector](https://github.com/ChainBench/OpenChainBench/blob/main/harnesses/l1-finality/cmd/script/solana_ws.go) times first visibility of a slot until a root notification covers that slot. This is observed network finality, not block cadence, a consensus target or the full USDC/CDP payment path.
 - **Lightning:** [Voltage reports a 1.86-second mean](https://voltage.cloud/blog/cheapest-way-to-settle-payments-instantly-a-cost-first-comparison) for 237,000 payments in a 30-day production pilot, published in 2026. The [pilot announcement](https://sbcevents.com/events/voltage-sbc-summit-americas/) identifies predominantly Cash App traffic. This is provider-reported off-chain settlement; the precise timer events and raw records are undisclosed. It does not measure L402 API delivery or Bitcoin base-layer confirmation.
 
-Base services may accept payment at an earlier assurance level rather than wait for Ethereum-backed finality. That can return a resource sooner, with different guarantees. None of the rows measures the same funded-wallet-to-delivered-response journey, and the speed bars should not be read as that comparison.
+The Base comparison accepts the L2 preconfirmed receipt for delivery; a seller requiring a sealed block or stronger finality must wait longer. These assurances differ from Atto/Nano confirmed sends, Solana rooted finality and Lightning settlement. None of the rows measures the same funded-wallet-to-delivered-response journey, and the speed bars should not be read as that comparison.
 
-The [dated observation data](/data/agent-payments-confirmation-2026-11-02.json) records the values used by the bars, source references and Base's observation timestamps, polling interval, finalization bracket and receipt checks. The Base sample used only public read requests against an existing transaction.
+The [dated observation data](/data/agent-payments-confirmation-2026-11-02.json) records the values and sources used by the bars. It also retains a separate, unscored Base L1 observation: one existing [USDC transfer](https://basescan.org/tx/0xdedc1cc426e864f08444e8bd0e9d3b8da5f3bab7baddf465d01f21575b9d6e04) took **20 minutes 38 seconds** from first observed L2 inclusion until [Ethereum-backed batch finality](https://specs.optimism.io/glossary.html#finalized-l2-head) on November 2. That stronger-assurance sample is excluded from the L2 speed index. <Link to="pathname:///data/agent-payments-confirmation-2026-11-02.json">Its polling timestamps and receipt checks</Link> remain available.
 
 The public [Atto, Nano and RSNano benchmarks](https://github.com/rotilho/feeless-benchmarks) provide reproduction commands, raw samples and manifests for controlled single-host, one-voter tests. Those remain separate from the live network observations above.
 
