@@ -1,7 +1,7 @@
 ---
 slug: payments-for-ai-agents-compared
 title: "Payments for AI agents: Atto, Nano, USDC and Lightning compared"
-description: Rated comparison of Atto, Nano, USDC on Base and Solana, and Lightning for agent micropayments, with a $0.001 cost example and settlement guarantees.
+description: Compare Atto, Nano, USDC and Lightning for agent payments, with rated costs, integration complexity and clear limits on live settlement measurements.
 authors: [rotilho]
 image: ./image-social.jpg
 ---
@@ -30,49 +30,51 @@ We build Atto for small, direct payments. This comparison follows each option fr
 
 The comparison below focuses on **$0.001 API calls paid separately**. The USDC economics scores use Coinbase's CDP Facilitator with `exact`, after its monthly free allowance. Other providers and batching can change those scores. Atto and Nano are assessed on direct protocol transfers; Lightning depends on the route and channel setup. These are payment-charge comparisons, not total operating-cost estimates.
 
+For **live settlement speed**, use one boundary: payment submission until the recipient can spend the funds, including queueing, retries and any recipient-side operation. We have not established comparable live measurements for all five routes. The table records that gap rather than substituting protocol targets or block times. Integration complexity concerns building the complete paid service, not just installing a wallet.
+
 <AgentPaymentComparison rows={[
   {
     id: 'atto', name: 'Atto', detail: 'Direct ATTO transfers',
     economics: {score: 5, note: 'No protocol transfer fee'},
     pricing: {score: 1, note: 'ATTO has a floating dollar value'},
-    readiness: {score: 2, note: 'Wallet tools available; paid-HTTP flow planned'},
-    settlement: <><strong>Confirmed Send</strong><p>Event-driven voting; no extra block-depth wait. A separate receipt makes funds spendable.</p></>,
+    integration: {score: 2, note: 'Wallet setup is available; seller still builds quoting, payment matching and recovery'},
+    settlement: <><strong>Comparable live time not established</strong><p>Confirm Send, then recipient Open/Receive. <a href="/metrics#confirmation-speed">Atto telemetry</a> times one node operation, not the whole transfer.</p></>,
   },
   {
     id: 'nano', name: 'Nano', detail: 'Direct XNO transfers',
     economics: {score: 5, note: 'No protocol transfer fee'},
     pricing: {score: 1, note: 'XNO has a floating dollar value'},
-    readiness: {score: 3, note: 'Community x402 and MCP implementations'},
-    settlement: <><strong>Confirmed send</strong><p>Representative voting; receive separately to credit the balance. A returned hash alone is insufficient.</p></>,
+    integration: {score: 3, note: 'Community stack; check versions, confirmation handling and failed-delivery recovery'},
+    settlement: <><strong>Comparable live time not established</strong><p>Confirm send, then receive. <a href="https://nanospeed.info/about">NanoSpeed</a> times single-block probes from its own node.</p></>,
   },
   {
     id: 'base', name: 'USDC on Base', detail: 'CDP exact, paid tier',
     economics: {score: 1, note: '$0.001 fee consumes a $0.001 sale'},
     pricing: {score: 5, note: 'USD-targeted asset; issuer conditions apply'},
-    readiness: {score: 5, note: 'Documented x402 client/server stack'},
-    settlement: <><strong>~2 s L2 inclusion</strong><p>~200 ms preconfirmation is weaker; Ethereum batch finality is ~20 min. <a href="https://docs.base.org/specifications/transactions/transaction-finality">Guarantees differ.</a></p></>,
+    integration: {score: 5, note: 'Managed facilitator and SDK; fund USDC, configure credentials and billing'},
+    settlement: <><strong>Comparable live time not established</strong><p>Measure inclusion, accepted finality and recipient balance. <a href="https://docs.base.org/specifications/transactions/transaction-finality">Different confirmation stages</a> give different guarantees.</p></>,
   },
   {
     id: 'solana', name: 'USDC on Solana', detail: 'CDP exact, paid tier',
     economics: {score: 1, note: 'Same CDP tariff for individual settlements'},
     pricing: {score: 5, note: 'USD-targeted asset; issuer conditions apply'},
-    readiness: {score: 5, note: 'Documented x402 client/server stack'},
-    settlement: <><strong>~150 ms finality target</strong><p><a href="https://solana.com/upgrades/alpenglow">Alpenglow consensus target</a>, not measured wallet-to-API delivery time.</p></>,
+    integration: {score: 5, note: 'Managed facilitator and SDK; configure Solana support and recipient token accounts'},
+    settlement: <><strong>Comparable live time not established</strong><p>Measure USDC submission through successful token transfer and spendable balance, including RPC and queueing time.</p></>,
   },
   {
     id: 'lightning', name: 'Bitcoin Lightning', detail: 'Funded payment channels',
     economics: {score: 3, note: 'Routing fees and channel capital vary'},
     pricing: {score: 1, note: 'Bitcoin has a floating dollar value'},
-    readiness: {score: 5, note: 'L402 with the Aperture proxy'},
-    settlement: <><strong>When the routed payment completes</strong><p>No new Bitcoin block per payment. Route availability and liquidity affect the wait.</p></>,
+    integration: {score: 3, note: 'Aperture plus a Lightning wallet; self-hosting adds channel and liquidity management'},
+    settlement: <><strong>Comparable live time not established</strong><p>Measure invoice payment through settled recipient credit, including routing attempts and retries.</p></>,
   },
 ]} />
 
-**Rating key:** economics scores are 5 for no protocol transfer fee, 3 for route-dependent costs, and 1 when the stated gateway fee consumes the sale. Dollar-budget scores distinguish a USD-targeted asset (5) from a floating asset (1). HTTP-tool scores distinguish provider-maintained paid-HTTP stacks (5), early community implementations whose maintainers warn of limited production deployment (3), and wallet tools with a planned paid-HTTP flow (2). They do not certify production reliability.
+**Rating key:** economics scores are 5 for no protocol transfer fee, 3 for route-dependent costs, and 1 when the stated gateway fee consumes the sale. Dollar-budget scores distinguish a USD-targeted asset (5) from a floating asset (1). Integration scores estimate the custom service work needed: 5 for a managed facilitator/SDK path, 3 for community-stack validation or channel operations, and 2 when the paid-HTTP service flow still needs implementing. These editorial judgments do not certify production reliability or rank settlement speed.
 
 ## When a $1 workload leaves nothing to run the service
 
-**1,000 calls at $0.001 each bring in $1.** Suppose each call needs one successful CDP `exact` settlement and the monthly free allowance has already been used. At **$0.001 per onchain transaction**, those calls incur **$1 in facilitator fees**, leaving **$0 before serving the requests**. The first 1,000 monthly transactions are free; verification is also free. [CDP pricing](https://docs.cdp.coinbase.com/x402/seller/facilitator)
+**1,000 calls at $0.001 each bring in $1.** Suppose each call needs one successful CDP `exact` settlement and the monthly free allowance has already been used. At **$0.001 per onchain transaction**, those calls incur **$1 in facilitator fees**, leaving **$0 before serving the requests**. This is published-tariff arithmetic, not a live transaction benchmark. The first 1,000 monthly transactions are free; verification is also free. [CDP pricing](https://docs.cdp.coinbase.com/x402/seller/facilitator)
 
 The fee already covers settlement gas. It should not be added to a second Base gas bill. CDP's [FAQ](https://docs.cdp.coinbase.com/x402/support/faq) explicitly identifies the zero-margin problem at this price. It applies to individual settlements on both Base and Solana through that service.
 
@@ -106,9 +108,9 @@ Nano fits services accepting XNO and developers evaluating its community agent t
 
 USDC on Base is a useful candidate when the service prices in dollars and supports the corresponding x402 payment option. The agent can authorize a payment as part of an HTTP exchange instead of requiring a separate checkout at each step. The [x402 buyer quickstart](https://docs.x402.org/getting-started/quickstart-for-buyers) shows the client integration path.
 
-Direct Base transfers carry [execution and Ethereum publication fees](https://docs.base.org/specifications/transactions/network-fees). Base's illustrative calculation puts a 200,000-gas transaction at $0.002 in L2 execution fees when ETH is $2,000, before publication or priority fees. That is a stated example, not a measured USDC-transfer quote. The hosted CDP route instead covers gas within its own tariff; sponsorship changes the payer, not the underlying economics.
+Direct Base transfers carry [execution and Ethereum publication fees](https://docs.base.org/specifications/transactions/network-fees). Estimate the fee for the actual signed transfer and current network conditions. The hosted CDP route instead covers gas within its own tariff; sponsorship changes the payer, not the underlying economics.
 
-Base distinguishes [~200 ms sequencer preconfirmation, ~2 s L2 inclusion, ~2 min Ethereum batch inclusion and ~20 min batch finality](https://docs.base.org/specifications/transactions/transaction-finality). These are different assurances. A service returning a response after an early acknowledgement accepts a different risk than one waiting for Ethereum finality; ordinary Base sends do not face the bridge-withdrawal waiting period.
+Base distinguishes [sequencer preconfirmation, L2 inclusion and later Ethereum finality](https://docs.base.org/specifications/transactions/transaction-finality). A service returning a response after an early acknowledgement accepts a different risk than one waiting for Ethereum finality. Those stages do not provide a measured submission-to-spendable time for this USDC flow; queueing and inclusion delays also matter.
 
 This option fits dollar-denominated services using existing x402 tooling, with prices large enough for their payment costs. Under CDP's paid per-settlement tariff, a $0.001 purchase cannot fund the service delivering it. That is an economic limit of this setup, rather than a protocol rule forbidding tiny USDC amounts.
 
@@ -120,7 +122,7 @@ Solana charges transaction fees in SOL. Its [payment documentation](https://sola
 
 [On closure](https://solana.com/docs/tokens/basics/close-account), the account owner or close authority chooses the refund destination; the original payer does not automatically recover it.
 
-Solana's October 2026 [Alpenglow update](https://solana.com/upgrades/alpenglow) targets roughly 150 ms consensus finality and makes `confirmed` and `finalized` describe the same state. This is a protocol target, not an API-response guarantee. Older guides describing the earlier finality model should not determine a new integration's settlement policy.
+For speed, time the actual USDC payment from client submission through the chosen confirmation assurance and recipient balance update. Include RPC submission, any queueing and retries. A consensus target or a fast RPC response does not measure that payment path.
 
 This option fits Solana USDC services and compatible tooling. Its [native transaction fee](https://solana.com/docs/core/fees) starts at 5,000 lamports per signature, plus any priority fee. CDP's hosted tariff remains a separate operating choice: fast consensus does not remove a facilitator's per-settlement charge. Recipient setup and issuer dependencies remain relevant.
 
@@ -144,13 +146,13 @@ Batch settlement can move authorized payments onchain later and spread costs acr
 
 For every option, establish what the service accepts, what the agent can sign, who covers costs, and which event permits delivery. Enforce spending limits in the wallet or payment service, outside the agent's prompt. Keep the purchase reference, payment identifier and delivered result connected. After a timeout, check whether payment succeeded before creating another one.
 
-## Settlement time and response time
+## Live settlement speed: measure the whole payment
 
-An agent waits from requesting a resource to receiving a usable response. That includes wallet preparation, negotiation, signing, publication, the chosen settlement boundary and service execution. A fast authorization, a finalized transfer and a delivered result are three different events.
+Measure from payment submission until funds are spendable by the recipient. Include queueing, retries and required recipient operations; state the finality assurance accepted. Track API-response time separately because negotiation, signing and resource execution add their own delays. A payment gateway's early acknowledgement is not proof that the full journey has completed.
 
-For Atto, wait for a verified confirmed Send before delivery; the recipient's separate receipt makes the balance spendable. Our [network measurements](/metrics#confirmation-speed) cover node-observed confirmation, not the whole purchase. The public [Atto, Nano and RSNano benchmarks](https://github.com/rotilho/feeless-benchmarks) provide reproduction commands, raw samples and manifests. Their single-host, one-voter scope cannot establish mainnet capacity or rank Base, Solana and Lightning.
+We have not established a comparable live settlement-speed dataset for these five routes. Atto's [network measurements](/metrics#confirmation-speed) cover arrival-to-storage at a node for one transaction. They exclude wallet preparation and the separate recipient receipt. [NanoSpeed's methodology](https://nanospeed.info/about) describes single-block confirmation probes from its own node. Neither is a complete wallet-to-wallet settlement measurement.
 
-Use those measurements to investigate the implementations, then test the complete flow your application will run. Comparing a local benchmark, a sequencer acknowledgement and a routed Lightning payment as if they measured the same event would hide the decision you need to make.
+The public [Atto, Nano and RSNano benchmarks](https://github.com/rotilho/feeless-benchmarks) provide reproduction commands, raw samples and manifests for controlled single-host, one-voter tests. They cannot supply missing mainnet settlement timings. Until the same live payment journey is measured for each route, a numerical speed ranking would imply evidence we do not have.
 
 ## Which payment option fits your AI agent?
 
