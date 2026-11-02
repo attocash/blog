@@ -47,8 +47,6 @@ Atto supports nine decimal places and charges no protocol transaction fee. Direc
 
 The boundary matters. The CLI and MCP packages are in beta. A wallet tool that sends ATTO does not automatically negotiate an API price, match payment to an order, or deliver the purchased response. Our [micropayment-rails roadmap](/docs/roadmap#phase-7-micropayment-rails) still lists the x402-style flow and paid demonstration endpoint as planned work.
 
-For production, review our [remote-node trust assumptions](/docs/whitepaper/technical#privacy-and-the-observation-boundary) and [security and remediation evidence](/docs/whitepaper/technical#implementation-and-audit-evidence). Our disclosed reviews were internal, and the disclosure leaves gaps in evidence that fixes reached deployed software.
-
 Atto fits developers who want small direct transfers, can work with ATTO-denominated balances, and can implement the service's payment logic. If a working paid-HTTP integration is the immediate requirement, compare that remaining work with the published x402 and L402 tooling below. ATTO's exchange rate can move, and funding or converting it can have separate costs.
 
 ### Nano: feeless transfers with community agent integrations
