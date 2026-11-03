@@ -16,15 +16,25 @@ import AgentPaymentComparison from "@site/src/components/AgentPaymentComparison"
 
 An AI agent needs one data lookup. The price is $0.001. Before the provider can return a result, the agent needs a way to pay that leaves the sale worth making.
 
-We build Atto for small, direct payments: no protocol transfer fees, first-party MCP, CLI and n8n integrations, and public node access. Its wallet tools are available today; a complete paid-HTTP service still needs custom payment logic.
+We build Atto for [small, direct agent payments](/agent-payments): no protocol transfer fees, first-party MCP, CLI and n8n integrations, and public node access. Its wallet tools are available today; a complete paid-HTTP service still needs custom payment logic.
 
-USDC brings dollar pricing and existing x402 support. Lightning serves bitcoin payments through L402. Nano offers another feeless option with community agent tools. The useful choice depends on the service, the payment size and the integration you want to run.
+USDC brings dollar pricing and existing x402 support. Lightning serves bitcoin payments through L402. Nano offers another feeless option with community agent tools. For AI agent micropayments, the useful choice depends on the service, the payment size and the integration you want to run.
 
 <!-- truncate -->
 
 *Capabilities, pricing and source snapshots checked on November 2, 2026. Individual timing measurements have the dates shown below.*
 
-## Compare the payment you need to make
+## Compare payment networks for AI agents {#compare-the-payment-you-need-to-make}
+
+Start with what the service accepts and what each request costs.
+
+| Your priority | Consider | Check before starting |
+| --- | --- | --- |
+| Very small direct transfers without a protocol transfer fee | Atto or Nano | Atto's CLI/MCP tools are in beta; accepting paid API calls needs custom service logic. |
+| Dollar pricing with an existing paid-HTTP flow | USDC on Base or Solana through x402 | Compare the facilitator's tariff with the price of each call. |
+| Bitcoin payments for API access | Lightning through L402 | Choose a wallet backend and check routing and provider fees. |
+
+The [agent-payment guide](/docs/integration/agent-payments) explains how a wallet payment fits into an API purchase and walks through a first bounded Atto payment.
 
 The fee comparison covers **$0.001 calls paid individually**. USDC scores use Coinbase's CDP Facilitator after its monthly free allowance; Atto and Nano use direct transfers, and Lightning uses funded channels.
 
@@ -139,7 +149,7 @@ A wallet provider can remove the need to run your own node. Self-hosting adds ch
 
 Choose a payment option the service accepts, then test a small purchase and its timeout recovery. A prepaid service balance may also be simpler when calls can be metered internally.
 
-To try Atto, start with the [integration guides](/docs/integration), fund a small wallet through the [faucet](/faucet), and test payment, confirmation and delivery together.
+To try Atto, follow the [agent-payment guide](/docs/integration/agent-payments) for a first bounded payment. The [integration guides](/docs/integration) help you choose MCP, CLI or n8n; the [faucet](/faucet) can fund a small wallet. A paid service must connect payment confirmation to its own purchase and delivery flow.
 
 ## Sources and methodology {#sources-and-methodology}
 
