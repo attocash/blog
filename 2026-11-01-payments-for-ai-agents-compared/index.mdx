@@ -7,6 +7,7 @@ image: ./image-social.jpg
 ---
 
 import IdealImage from "@theme/IdealImage";
+import AgentPaymentComparison from "@site/src/components/AgentPaymentComparison";
 
 <IdealImage
   img={require('./image.jpg')}
@@ -17,7 +18,9 @@ An AI agent needs one data lookup. The price is $0.001. Before the provider can 
 
 We build Atto for [small, direct agent payments](/agent-payments) with no protocol transfer fees, first-party MCP, CLI and n8n integrations, and public node access. Its wallet tools are available today. A complete paid-HTTP service still needs custom payment logic.
 
-USDC brings dollar pricing and x402 support, with routes that settle each payment individually and routes that batch settlement. Lightning serves bitcoin payments through L402. Nano offers another feeless option with community agent tools. For AI agent micropayments, the useful choice depends on the service, the payment size and the integration you want to run.
+USDC tracks the dollar and carries issuer and redemption conditions. [USDC terms](https://www.circle.com/legal/usdc-terms).
+
+USDC has x402 support, with routes that settle each payment individually and routes that batch settlement. Lightning serves bitcoin payments through L402. Nano offers another feeless option with community agent tools. For AI agent micropayments, the useful choice depends on the service, the payment size and the integration you want to run.
 
 <!-- truncate -->
 
@@ -25,20 +28,58 @@ USDC brings dollar pricing and x402 support, with routes that settle each paymen
 
 ## Compare payment networks for AI agents {#compare-the-payment-you-need-to-make}
 
-Start with what the service accepts, what each request costs and when the seller can deliver.
+Compare the routes for an agent with a funded wallet buying 1,000 calls from one seller at $0.001 each. The price score follows a wallet funded on October 2 through October 9. The speed score comes from a lab with 500 accounts active at once, each waiting for its previous send to confirm. Each column is scored out of five.
 
-| Payment route | Per-payment economics | Funding and settlement | Paid-API integration |
-| --- | --- | --- | --- |
-| Direct ATTO | No protocol transfer fee | Fund a wallet. The seller checks the confirmed Send and can spend the funds after an Open or Receive. | First-party MCP, CLI and n8n for wallet payments. The seller builds quoting, matching and delivery. |
-| Direct XNO | No protocol transfer fee | Fund a wallet. The seller checks the confirmed send and receives the funds before spending them. | Community CLI, MCP and x402 tooling. Check confirmation handling. |
-| USDC through Coinbase CDP `exact` on Base or Solana | $0.001 per onchain settlement after 1,000 free monthly transactions | Fund a USDC wallet. CDP settles each successful payment onchain. | x402 client and seller SDKs with a hosted facilitator. |
-| USDC through Circle Gateway Nanopayments on supported EVM chains | Payments as small as $0.000001, with no gas per payment. Check deposit, withdrawal and route fees. | Pre-fund a Gateway balance. The buyer signs offchain and Circle batches settlement. | Circle CLI and buyer SDK. Sellers can use Circle's x402 middleware. |
-| USDC through Coinbase CDP `batch-settlement` on supported EVM chains | Offchain voucher verification is free. Onchain claims and channel operations count toward the CDP tariff. | Fund a payment channel and submit vouchers. The seller claims a batch onchain. | Requires a buyer and seller integration that supports the scheme and handles channel settlement. |
-| Bitcoin Lightning | Routing and provider fees vary | Use a wallet with funded channels and sufficient liquidity. Payments settle offchain. | L402 and paid MCP tooling, with a compatible wallet backend. |
+export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No USDC ATH quote in the Nov 2 snapshot.'};
 
-ATTO, XNO and bitcoin prices move against the dollar. USDC simplifies dollar pricing and comes with issuer and redemption conditions. [USDC terms](https://www.circle.com/legal/usdc-terms).
+<AgentPaymentComparison rows={[
+  {
+    name: 'Atto', detail: 'Direct ATTO',
+    economics: {score: 5, note: 'No protocol transfer fee.'},
+    pricing: {score: 3, note: 'Up 4.29% on Oct 6, its largest move from Oct 2.', drawdown: '82.1% below ATH on Nov 2.'},
+    integration: {score: 2, note: 'First-party MCP, CLI and n8n. The seller builds quoting, payment matching and delivery.'},
+    latency: {score: 4.8, note: '400 ms per confirmed Send in the paired test (Atto 1.34). The recipient can spend after an Open or Receive.'},
+  },
+  {
+    name: 'Nano', detail: 'Direct XNO',
+    economics: {score: 5, note: 'No protocol transfer fee.'},
+    pricing: {score: 1, note: 'Down 10.32% on Oct 9.', drawdown: '99.1% below ATH on Nov 2.'},
+    integration: {score: 3, note: 'Feeless402 CLI/MCP. The seller must check the reported confirmation state before delivery.'},
+    latency: {score: 5, note: '380 ms per confirmed send in the paired test (Nano V28.2). A receive makes the funds spendable.'},
+  },
+  {
+    name: 'USDC · CDP exact', detail: 'Base or Solana',
+    economics: {score: 1, note: '$0.001 per onchain settlement after the monthly free tier. Fees consume the full sale.'},
+    pricing: usdcWeek,
+    integration: {score: 5, note: 'x402 client and seller SDKs use a hosted facilitator.'},
+    latency: {note: 'CDP settles each payment onchain. No matching send test for either network.'},
+  },
+  {
+    name: 'USDC · Circle Gateway', detail: 'Same-chain EVM, Circle Agent Wallet',
+    economics: {score: 5, note: 'No per-payment gas or same-chain Gateway fee after funding.'},
+    pricing: usdcWeek,
+    integration: {score: 5, note: 'Circle CLI or buyer SDK, seller middleware and hosted Gateway.'},
+    latency: {note: 'The seller can deliver on Gateway acceptance. Funds become spendable after batch settlement.'},
+  },
+  {
+    name: 'USDC · CDP batch', detail: 'Funded EVM channel',
+    economics: {score: 4, note: 'One $0.001 claim for 1,000 vouchers costs $0.000001 per call. Channel operations cost extra.'},
+    pricing: usdcWeek,
+    integration: {score: 3, note: 'The seller adds channel and claim handling. The default helper omits this scheme.'},
+    latency: {note: 'The buyer signs a voucher per payment. The seller can claim the batch later.'},
+  },
+  {
+    name: 'Bitcoin Lightning', detail: 'L402 with a funded channel',
+    economics: {note: 'Routing and wallet-provider fees depend on the payment path.'},
+    pricing: {score: 3, note: 'Down 3.72% on Oct 9.', drawdown: '38.1% below ATH on Nov 2.'},
+    integration: {score: 4, note: 'lnget pays the challenge. In this setup the seller runs the Aperture proxy with an lnd backend.'},
+    latency: {note: 'The buyer presents the payment proof to access the API. No matching send test.'},
+  },
+]} />
 
-The [agent-payment guide](/docs/integration/agent-payments) explains how a wallet payment fits into an API purchase and walks through a first bounded Atto payment.
+**Why chained latency matters.** If the next request waits for the previous payment, 100 waits of 150 ms add 15 seconds. At 300 ms they add 30 seconds. A wallet doing nothing else can complete twice as many serial payments at the shorter interval. Signing, network round trips and the API’s own work add time. A seller who needs to spend each incoming payment may also have to wait beyond the point when it can release the response.
+
+The [agent-payment guide](/docs/integration/agent-payments) walks through a first bounded Atto payment and shows where confirmation fits into an API purchase.
 
 ## When a $1 workload leaves nothing to run the service
 
@@ -58,7 +99,7 @@ The CLI/MCP wallet starts read-only and lets you approve [per-payment and rollin
 
 Nano also fits small, direct payments. Its community [Feeless402 CLI/MCP](https://github.com/Feeless402/feeless402) provides public RPC defaults, and [Nano's agent page](https://nano.org/agents) links x402 tooling. Running your own node is optional.
 
-The linked x402 implementation can return a block hash before confirmation. Check confirmation before delivering a purchase. [Nano x402 security notes](https://github.com/x402nano/exact#security-notes-).
+The setup score covers Feeless402. Its settlement result reports the block hash and confirmation state separately. The seller needs to check that state before delivering the purchase. [Feeless402 settlement result](https://github.com/Feeless402/feeless402/blob/4dd6d7abca767981552bc74e88f7f434b760ea0d/nano_pay/verify.py#L198-L229).
 
 ### USDC on Base: dollar pricing and existing x402 support
 
@@ -90,6 +131,8 @@ CDP's facilitator supports the scheme on Base and other EVM chains. Its `createX
 
 Lightning fits bitcoin services using [L402](https://docs.lightning.engineering/the-lightning-network/l402/l402). Lightning Labs' [lnget CLI/MCP](https://github.com/lightninglabs/lnget) can pay a challenge and retry the request. [Alby MCP](https://github.com/getAlby/mcp/) connects agents and n8n workflows to a compatible wallet.
 
+Aperture’s static endpoint price is a whole number of satoshis. At the November 2 BTC quote, $0.001 bought about 1.28 sats, so a seller charging per request would have to round the price. [Aperture price configuration](https://github.com/lightninglabs/aperture/blob/1f2e5a1e98adf743bc6e0765bc638d2f20c11ade/proxy/service.go#L116-L118).
+
 A wallet provider can remove the need to run your own node. Self-hosting adds channel and liquidity management. Routing and provider fees vary. [Alby paid MCP](https://github.com/getAlby/paidmcp).
 
 ## Start with the purchase
@@ -101,9 +144,36 @@ To try Atto, follow the [agent-payment guide](/docs/integration/agent-payments) 
 ## Sources and methodology {#sources-and-methodology}
 
 <details>
-<summary>Timing observations and implementation notes</summary>
+<summary>Scoring rules, source measurements and implementation notes</summary>
 
-**Timing observations.** These samples start and end at different events and cover different levels of settlement assurance. Use them to understand which part of each flow was measured. Complete API purchases also include the wallet and service steps described above.
+**Per-call fees.** Divide the payment or claim fee by the $0.001 sale price. Zero earns 5. A positive fee up to 1% earns 4, over 1% through 10% earns 3, over 10% but below 100% earns 2, and 100% or more earns 1. A variable fee needs a route quote. The example starts after funding and after CDP's monthly allowance. It assumes one batch claim for all 1,000 vouchers. Deposits, withdrawals, conversion, liquidity and running the service affect the full cost.
+
+**Paid API setup.** These are editorial ratings of the named buyer and seller tools. A documented client and seller integration with managed payment infrastructure earns 5. A packaged client and seller proxy with a seller-operated payment backend earns 4. Seller tooling that needs application code to verify confirmation or manage a payment channel earns 3. Wallet tools that leave the paid-HTTP flow to the seller earn 2. A route that also needs a custom wallet client would earn 1. The scores describe the work to integrate the named tools. Reliability and spending controls need separate checks. [Lightning buyer](https://github.com/lightninglabs/lnget), [Aperture seller setup](https://github.com/lightninglabs/aperture#installation--setup).
+
+**One-week USD stability.** Suppose an agent funds its wallet on October 2, 2026 and pays from it over the following week. For each asset we took the largest absolute percentage change from the starting USD price across eight daily observations. Atto’s largest move came on October 6, before the end of the week. Smaller moves keep a dollar-denominated budget more predictable. A move up to 0.1% earns 5, then up to 1% earns 4, up to 5% earns 3, up to 10% earns 2, and above 10% earns 1.
+
+October 2–9 was the most recent seven-day interval with eight consecutive midnight UTC prices for all four assets in the CoinGecko data through November 22. Later ATTO observations had gaps. The table shows rounded prices. Scores use the full-precision observations. Daily prices miss intraday swings, and actual conversion prices depend on liquidity. One observed week tells you little about a future week. [ATTO daily prices](https://api.coingecko.com/api/v3/coins/atto/market_chart/range?from=2026-07-01&to=2026-11-23&interval=daily&vs_currency=usd&precision=full), [XNO daily prices](https://api.coingecko.com/api/v3/coins/nano/market_chart/range?from=2026-08-01&to=2026-11-23&interval=daily&vs_currency=usd&precision=full), [BTC daily prices](https://api.coingecko.com/api/v3/coins/bitcoin/market_chart/range?from=2026-08-01&to=2026-11-23&interval=daily&vs_currency=usd&precision=full), [USDC daily prices](https://api.coingecko.com/api/v3/coins/usd-coin/market_chart/range?from=2026-08-01&to=2026-11-23&interval=daily&vs_currency=usd&precision=full).
+
+| Date at 00:00 UTC | ATTO (USD) | XNO (USD) | BTC (USD) | USDC (USD) |
+| --- | ---: | ---: | ---: | ---: |
+| Oct 2 | 0.00004015097 | 0.37460372 | 84,841.67 | 0.99990951 |
+| Oct 3 | 0.00004122416 | 0.35921884 | 84,506.47 | 0.99997464 |
+| Oct 4 | 0.00004129219 | 0.36225783 | 84,742.79 | 0.99997202 |
+| Oct 5 | 0.00004165354 | 0.36151622 | 86,489.73 | 0.99995318 |
+| Oct 6 | 0.00004187521 | 0.36455980 | 85,770.87 | 0.99999530 |
+| Oct 7 | 0.00004166330 | 0.36441693 | 85,540.09 | 0.99991167 |
+| Oct 8 | 0.00004162972 | 0.35335532 | 83,282.05 | 0.99969621 |
+| Oct 9 | 0.00004162037 | 0.33595779 | 81,685.89 | 0.99962201 |
+
+**Drawdown from the all-time high (ATH).** On November 2 the ATTO quote was $0.00003932 against a recorded high of $0.00021937. XNO was $0.319043 against $33.69 and BTC was $78,023 against $126,080. The scorecard shows the percentage below each asset’s high separately from its one-week score. Someone who bought at the peak experienced that loss in dollar value by November 2. The snapshot was retrieved at 09:59 UTC. ATTO’s quote was about seven hours old, and XNO’s and BTC’s were about a minute old. USDC was outside that snapshot. [Archived November 2 quotes and retrieval times](https://github.com/attocash/blog/blob/9a5100f6052037653607d340438992f4c476cae0/2026-11-01-payments-for-ai-agents-compared/index.mdx#L182-L190).
+
+**Chained send speed.** In a published August 2026 test, each of 500 accounts submitted 100 dependent sends, waiting for confirmation before its next send. Each pair ran on the same machine with one voter and fresh durable storage. The timer started just before submitting a prepared send and stopped when the client observed confirmation for that exact hash. Atto returned the matching transaction on its HTTP stream. Nano returned the hash over RPC and reported confirmation over WebSocket. Wallet preparation, receiving the funds and serving an API response fall outside the timer. [Timer and adapters](https://github.com/rotilho/feeless-benchmarks/blob/e87fe7995fd0e7fe420f608c04cb0966e42b9619/docs/methodology.md).
+
+Each implementation contributed 50,000 sends per run. Across ten paired runs, the median of the run means was **380.12 ms for Nano V28.2** and **399.59 ms for Atto 1.34**. Nano had the lower mean in seven pairs. For a lane of 100 dependent sends, those figures correspond to about 38.0 and 40.0 seconds of payment wait under that load. The fastest median earns 5. Each other score is five times the fastest median divided by its own, rounded to one decimal. The same test put the alternative Nano node RSNano V3.1 at 900.54 ms (2.1/5). A service using another node version or a different load can see different timings. The other routes have no matching result in this dataset. [Ten paired runs and manifests](https://github.com/rotilho/feeless-benchmarks/blob/b092bfccf487b894cd17f4230dbf914479e846ff/results/common-runner/500-account-ranges.json).
+
+With just **one active account** sending 1,000 times in sequence, the same project reported means of 22 ms for Atto and 199 ms for Nano V28.2. Those two runs used different host CPUs. We show the single-wallet figures unscored because the hardware and load change the comparison. Neither workload times a full paid API request. [Single-wallet results and hardware manifests](https://github.com/rotilho/feeless-benchmarks/blob/b092bfccf487b894cd17f4230dbf914479e846ff/docs/results.md#single-run-artifacts).
+
+**Mainnet timing observations.** These samples start and end at different events and cover different levels of settlement assurance. Use them to understand which part of each flow was measured. Complete API purchases also include the wallet and service steps described above.
 
 | Network | Dated observation | What it measures |
 | --- | --- | --- |
@@ -114,8 +184,6 @@ To try Atto, follow the [agent-payment guide](/docs/integration/agent-payments) 
 | Lightning | 1.86-second mean across 237,000 payments in a 30-day pilot, reported in 2026 | Provider-reported offchain settlement for traffic predominantly from Cash App. The provider did not disclose precise timer boundaries or raw records. [Voltage report](https://voltage.cloud/blog/cheapest-way-to-settle-payments-instantly-a-cost-first-comparison), [pilot announcement](https://sbcevents.com/events/voltage-sbc-summit-americas/). |
 
 The [original November 2 snapshot](/data/agent-payments-confirmation-2026-11-02.json) preserves the measurements and timing indices used in that edition. It also includes one pre-Denim [USDC transfer](https://basescan.org/tx/0xdedc1cc426e864f08444e8bd0e9d3b8da5f3bab7baddf465d01f21575b9d6e04): 20 minutes 38 seconds elapsed between first observing L2 inclusion and first observing [Ethereum-backed batch finality](https://specs.optimism.io/glossary.html#finalized-l2-head). The download records polling timestamps, the successful receipt and the unchanged block-hash checks.
-
-The [Atto, Nano and RSNano benchmark repository](https://github.com/rotilho/feeless-benchmarks) contains reproduction commands and raw data for controlled single-host, one-voter tests. Those tests are separate from the mainnet observations above.
 
 **Implementation notes.** A wallet tool, a payment network and a paid-HTTP protocol handle different steps. [x402](https://docs.x402.org/core-concepts/http-402) requests payment through HTTP 402. [L402](https://docs.lightning.engineering/the-lightning-network/l402/l402) uses a Lightning invoice and payment proof. For Atto or Nano, match the confirmed send's recipient, amount and purchase before delivery. Check existing payment status after a timeout before starting another payment.
 
