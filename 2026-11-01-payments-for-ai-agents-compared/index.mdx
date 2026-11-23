@@ -28,7 +28,7 @@ USDC has x402 support, with routes that settle each payment individually and rou
 
 ## Compare payment networks for AI agents {#compare-the-payment-you-need-to-make}
 
-Compare the routes for an agent with a funded wallet buying 1,000 calls from one seller at $0.001 each. The price score follows a wallet funded on October 2 through October 9. Fees, USD stability and setup are scored out of five. For speed, read the mainnet time alongside the event it measures. A node confirming a block, a wallet completing a payment and a seller returning an API response can each have a different clock.
+Compare the routes for an agent with a funded wallet buying 1,000 calls from one seller at $0.001 each. The price score follows a wallet funded on October 2 through October 9. Fees, USD stability and setup are scored out of five. For speed, read the mainnet time alongside the event it measures. A node confirming a block, a wallet completing a payment and a seller returning an API response can each have a different clock. The decentralization column identifies whose cooperation the route needs.
 
 export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No USDC ATH quote in the Nov 2 snapshot.'};
 
@@ -39,6 +39,7 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     pricing: {score: 3, note: 'Up 4.29% on Oct 6, its largest move from Oct 2.', drawdown: '82.1% below ATH on Nov 2.'},
     integration: {score: 2, note: 'First-party MCP, CLI and n8n. The seller builds quoting, payment matching and delivery.'},
     latency: {label: '124.31 ms mean', note: 'Nov 22, 2026. From node arrival to confirmed storage across two mainnet nodes. Includes all account-update types.'},
+    decentralization: {label: 'Delegated votes', note: 'On Nov 23 the voter registry attributed 12 keys to Atto. They held at least 90.7% of assigned voting weight.'},
   },
   {
     name: 'Nano', detail: 'Direct XNO',
@@ -46,6 +47,7 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     pricing: {score: 1, note: 'Down 10.32% on Oct 9.', drawdown: '99.1% below ATH on Nov 2.'},
     integration: {score: 3, note: 'Feeless402 CLI/MCP. The seller must check the reported confirmation state before delivery.'},
     latency: {label: '323.32 ms mean', note: 'Nov 22, 2026. Confirmation time for 144 single-block probes sent by NanoSpeed on mainnet.'},
+    decentralization: {label: 'Delegated votes', note: 'On Nov 23 the seven largest representative accounts held 51.0% of the weight reported by one public node. Accounts can share an operator.'},
   },
   {
     name: 'USDC · CDP exact', detail: 'Base or Solana',
@@ -53,6 +55,7 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     pricing: usdcWeek,
     integration: {score: 5, note: 'x402 client and seller SDKs use a hosted facilitator.'},
     latency: {label: 'No current route timing verified', note: 'CDP settles individual payments on Base or Solana. Network block and slot times cover only part of that path.'},
+    decentralization: {label: 'Issuer and facilitator', note: 'The buyer signs. Coinbase can decline to settle through CDP. Circle can block USDC addresses. Base or Solana confirms the transfer.'},
   },
   {
     name: 'USDC · Circle Gateway', detail: 'Same-chain EVM, Circle Agent Wallet',
@@ -60,6 +63,7 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     pricing: usdcWeek,
     integration: {score: 5, note: 'Circle CLI or buyer SDK, seller middleware and hosted Gateway.'},
     latency: {label: 'Acceptance time unavailable', note: 'The seller can deliver once Gateway accepts the payment. Funds become spendable after the batch settles.'},
+    decentralization: {label: 'Gateway and issuer', note: 'The buyer signs against a deposit. Circle’s Gateway approves each payment and batches settlement. Circle can block USDC addresses.'},
   },
   {
     name: 'USDC · CDP batch', detail: 'Funded EVM channel',
@@ -67,6 +71,7 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     pricing: usdcWeek,
     integration: {score: 3, note: 'The seller adds channel and claim handling. The default helper omits this scheme.'},
     latency: {label: 'Voucher timing unavailable', note: 'The buyer signs a voucher per payment. Claiming it and paying out to the seller happen later.'},
+    decentralization: {label: 'Channel and facilitator', note: 'The buyer signs vouchers. This route uses CDP to verify them. The EVM contract enforces claims and Circle can block USDC addresses.'},
   },
   {
     name: 'Bitcoin Lightning', detail: 'L402 with a funded channel',
@@ -74,6 +79,7 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     pricing: {score: 3, note: 'Down 3.72% on Oct 9.', drawdown: '38.1% below ATH on Nov 2.'},
     integration: {score: 4, note: 'lnget pays the challenge. In this setup the seller runs the Aperture proxy with an lnd backend.'},
     latency: {label: '0.56 s mean', note: 'Voltage’s 0–100 sat sample, data dated Oct 22, 2024. A separate 30-day production pilot reported 1.86 s mean settlement across 237,000 payments in its April 2026 report.'},
+    decentralization: {label: 'Peer channels', note: 'The payer controls the funded wallet. Peers can refuse to forward. Either channel peer can close on Bitcoin without the other’s permission.'},
   },
 ]} />
 
@@ -170,6 +176,12 @@ October 2–9 was the most recent seven-day interval with eight consecutive midn
 | Oct 9 | 0.00004162037 | 0.33595779 | 81,685.89 | 0.99962201 |
 
 **Drawdown from the all-time high (ATH).** On November 2 the ATTO quote was $0.00003932 against a recorded high of $0.00021937. XNO was $0.319043 against $33.69 and BTC was $78,023 against $126,080. The scorecard shows the percentage below each asset’s high separately from its one-week score. Someone who bought at the peak experienced that loss in dollar value by November 2. The snapshot was retrieved at 09:59 UTC. ATTO’s quote was about seven hours old, and XNO’s and BTC’s were about a minute old. USDC was outside that snapshot. [Archived November 2 quotes and retrieval times](https://github.com/attocash/blog/blob/9a5100f6052037653607d340438992f4c476cae0/2026-11-01-payments-for-ai-agents-compared/index.mdx#L182-L190).
+
+**Decentralization.** Here we look at who controls the wallet, who can refuse to process the payment, and who confirms it. A wallet can hold its own keys and still rely on a particular facilitator or token issuer. Voting accounts, routing peers and hosted facilitators play different roles.
+
+- **Atto and Nano.** Holders delegate voting weight and retain the keys that spend their funds. On November 23 Atto’s known-voter registry grouped 12 addresses under the Atto project. Together they had 16.33 billion ATTO in voting weight. Dividing by the maximum supply of 18 billion gives a conservative lower bound of 90.7% of assigned weight. Even if every remaining ATTO voted elsewhere, those voters alone would fall short of the reference node’s 10 billion ATTO minimum quorum if all 12 keys withheld votes. Nano’s seven largest representative accounts had 51.0% of the weight returned by one public node. That node’s list includes offline representatives and can omit weights below its reporting threshold. The seven addresses may have fewer than seven operators. [Dated voting-weight data and sources](/data/agent-payments-voting-weight-2026-11-23.json), [Atto voter registry](https://gatekeeper.live.application.atto.cash/projections/voters), [Nano RPC](https://docs.nano.org/commands/rpc-protocol/#representatives). [Atto voting and quorum](/docs/whitepaper/technical#advanced-detail-quorum-in-the-inspected-node), [Nano voting](https://docs.nano.org/protocol-design/orv-consensus/).
+- **USDC.** Circle can block addresses from sending or receiving USDC. For the CDP routes, Coinbase can decline the signed payment during screening. An x402 merchant can choose another facilitator or self-host one. Base has one active sequencer with a forced-inclusion path via Ethereum. Solana rotates block production among scheduled validators. With Gateway, the buyer signs and Circle authorizes the payment and batches settlement. Gateway depositors can request withdrawal onchain if the API is offline, subject to the withdrawal delay and contract pause controls. In a CDP payment channel, the buyer signs vouchers and can initiate a withdrawal and recover unclaimed funds after the channel’s delay. [Circle USDC terms](https://www.circle.com/legal/usdc-terms), [CDP compliance and trust](https://docs.cdp.coinbase.com/x402/support/faq#compliance-and-trust), [x402 facilitators](https://docs.x402.org/core-concepts/facilitator), [Base sequencer and forced inclusion](https://docs.base.org/specifications/security/reliability-and-liveness#censorship-resistance-and-sequencer-liveness), [Solana consensus](https://solana.com/upgrades/alpenglow), [Gateway settlement](https://developers.circle.com/gateway-nanopayments/concepts/batched-settlement), [Gateway withdrawals](https://developers.circle.com/gateway/references/technical-guide#withdrawal), [channel withdrawals](https://github.com/x402-foundation/x402/blob/main/specs/schemes/batch-settlement/scheme_batch_settlement_evm.md#refund-and-withdrawal).
+- **Lightning.** The buyer in this example controls its funded channel. An intermediary can decline to forward, and another route requires enough liquidity. Either peer can close on Bitcoin. A unilateral close incurs an onchain fee and the closing peer may have to wait to spend its output. A custodial wallet adds a provider that controls the keys. [Channel lifecycle](https://docs.lightning.engineering/the-lightning-network/payment-channels/lifecycle-of-a-payment-channel), [LND payments](https://docs.lightning.engineering/lightning-network-tools/lnd/payments), [unilateral closes](https://github.com/lightning/bolts/blob/master/05-onchain.md#unilateral-close-handling-local-commitment-transaction).
 
 **Mainnet timing observations.** Atto and Nano use the latest complete UTC day available at the November 23 review. The Lightning sources report production payments grouped by amount or by pilot. Each row identifies what the source timed. For a service chaining API calls, measure from payment initiation until the seller returns the response to find the full wait per step.
 
