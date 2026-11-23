@@ -99,7 +99,9 @@ At the same tariff, the fee takes 10% of a $0.01 sale or 1% of a $0.10 sale. For
 
 Atto suits individual payments where a protocol fee would consume too much of the sale. The first-party [MCP](/build/mcp), [CLI](/build/cli) and [n8n](/build/n8n) tools use public services, so developers can start without finding or hosting a node.
 
-The CLI/MCP wallet starts read-only and lets you approve [per-payment and rolling spending limits](/docs/integration/mcp#approve-a-spending-allowance) locally. Those packages are in beta. A complete paid-API flow still needs custom quoting, payment matching and delivery logic. The [x402-style flow and demonstration endpoint](/docs/roadmap#phase-7-micropayment-rails) remain planned work.
+The CLI/MCP wallet starts read-only and lets you approve [per-payment and rolling spending limits](/docs/integration/mcp#approve-a-spending-allowance) locally. Those packages are in beta. If you charge for calls to your own API, you still need to quote a price, match the payment and deliver the result.
+
+As of November 23, Atto Marketplace uses x402 for direct ATTO or XNO payments on approved task milestones and Shop purchases. Its [integration guide](https://atto.market/integration#integration-shared-direct-payment-flow) explains how Marketplace verifies the payment. Atto plans to extend that flow to general-purpose API and MCP tool calls and publish a catalog of paid services. See the [Atto roadmap](/docs/roadmap#phase-7-micropayment-rails).
 
 ### Nano: feeless payments with community integrations
 
