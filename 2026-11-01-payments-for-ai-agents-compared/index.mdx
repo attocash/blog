@@ -28,7 +28,7 @@ USDC has x402 support, with routes that settle each payment individually and rou
 
 ## Compare payment networks for AI agents {#compare-the-payment-you-need-to-make}
 
-Compare the routes for an agent with a funded wallet buying 1,000 calls from one seller at $0.001 each. The price score follows a wallet funded on October 2 through October 9. The speed score comes from a lab with 500 accounts active at once, each waiting for its previous send to confirm. Each column is scored out of five.
+Compare the routes for an agent with a funded wallet buying 1,000 calls from one seller at $0.001 each. The price score follows a wallet funded on October 2 through October 9. Fees, USD stability and setup are scored out of five. For speed, read the mainnet time alongside the event it measures. A node confirming a block, a wallet completing a payment and a seller returning an API response can each have a different clock.
 
 export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No USDC ATH quote in the Nov 2 snapshot.'};
 
@@ -38,42 +38,42 @@ export const usdcWeek = {score: 5, note: 'Down 0.03% on Oct 9.', drawdown: 'No U
     economics: {score: 5, note: 'No protocol transfer fee.'},
     pricing: {score: 3, note: 'Up 4.29% on Oct 6, its largest move from Oct 2.', drawdown: '82.1% below ATH on Nov 2.'},
     integration: {score: 2, note: 'First-party MCP, CLI and n8n. The seller builds quoting, payment matching and delivery.'},
-    latency: {score: 4.8, note: '400 ms per confirmed Send in the paired test (Atto 1.34). The recipient can spend after an Open or Receive.'},
+    latency: {label: '124.31 ms mean', note: 'Nov 22, 2026. From node arrival to confirmed storage across two mainnet nodes. Includes all account-update types.'},
   },
   {
     name: 'Nano', detail: 'Direct XNO',
     economics: {score: 5, note: 'No protocol transfer fee.'},
     pricing: {score: 1, note: 'Down 10.32% on Oct 9.', drawdown: '99.1% below ATH on Nov 2.'},
     integration: {score: 3, note: 'Feeless402 CLI/MCP. The seller must check the reported confirmation state before delivery.'},
-    latency: {score: 5, note: '380 ms per confirmed send in the paired test (Nano V28.2). A receive makes the funds spendable.'},
+    latency: {label: '323.32 ms mean', note: 'Nov 22, 2026. Confirmation time for 144 single-block probes sent by NanoSpeed on mainnet.'},
   },
   {
     name: 'USDC · CDP exact', detail: 'Base or Solana',
     economics: {score: 1, note: '$0.001 per onchain settlement after the monthly free tier. Fees consume the full sale.'},
     pricing: usdcWeek,
     integration: {score: 5, note: 'x402 client and seller SDKs use a hosted facilitator.'},
-    latency: {note: 'CDP settles each payment onchain. No matching send test for either network.'},
+    latency: {label: 'No current route timing verified', note: 'CDP settles individual payments on Base or Solana. Network block and slot times cover only part of that path.'},
   },
   {
     name: 'USDC · Circle Gateway', detail: 'Same-chain EVM, Circle Agent Wallet',
     economics: {score: 5, note: 'No per-payment gas or same-chain Gateway fee after funding.'},
     pricing: usdcWeek,
     integration: {score: 5, note: 'Circle CLI or buyer SDK, seller middleware and hosted Gateway.'},
-    latency: {note: 'The seller can deliver on Gateway acceptance. Funds become spendable after batch settlement.'},
+    latency: {label: 'Acceptance time unavailable', note: 'The seller can deliver once Gateway accepts the payment. Funds become spendable after the batch settles.'},
   },
   {
     name: 'USDC · CDP batch', detail: 'Funded EVM channel',
-    economics: {score: 4, note: 'One $0.001 claim for 1,000 vouchers costs $0.000001 per call. Channel operations cost extra.'},
+    economics: {score: 4, note: 'One $0.001 claim for 1,000 vouchers costs $0.000001 per call. Funding and payout can add costs.'},
     pricing: usdcWeek,
     integration: {score: 3, note: 'The seller adds channel and claim handling. The default helper omits this scheme.'},
-    latency: {note: 'The buyer signs a voucher per payment. The seller can claim the batch later.'},
+    latency: {label: 'Voucher timing unavailable', note: 'The buyer signs a voucher per payment. Claiming it and paying out to the seller happen later.'},
   },
   {
     name: 'Bitcoin Lightning', detail: 'L402 with a funded channel',
-    economics: {note: 'Routing and wallet-provider fees depend on the payment path.'},
+    economics: {score: 2, basis: '0–100 sat sample', note: '13.02% mean fee in the Voltage data dated Oct 22, 2024. On a 1-sat invoice, a direct channel with no provider fee earns 5/5 (0 sats). A total fee of 1 sat earns 1/5.'},
     pricing: {score: 3, note: 'Down 3.72% on Oct 9.', drawdown: '38.1% below ATH on Nov 2.'},
     integration: {score: 4, note: 'lnget pays the challenge. In this setup the seller runs the Aperture proxy with an lnd backend.'},
-    latency: {note: 'The buyer presents the payment proof to access the API. No matching send test.'},
+    latency: {label: '0.56 s mean', note: 'Voltage’s 0–100 sat sample, data dated Oct 22, 2024. A separate 30-day production pilot reported 1.86 s mean settlement across 237,000 payments in its April 2026 report.'},
   },
 ]} />
 
@@ -123,7 +123,7 @@ Each authorization is gas-free. Direct funding deposits use onchain gas, and wit
 
 ### USDC through Coinbase CDP batch settlement
 
-CDP's `batch-settlement` scheme uses a funded payment channel. Buyers sign offchain vouchers that a seller can claim together. After the free allowance, the $0.001 tariff applies to each onchain batch claim and each onchain channel operation such as a deposit, refund or withdrawal. Offchain verification is free. This can spread the cost of settlement over many paid calls. [CDP pricing and supported networks](https://docs.cdp.coinbase.com/x402/seller/facilitator).
+CDP's `batch-settlement` scheme uses a funded payment channel. Buyers sign offchain vouchers that a seller can claim together. After the free allowance, the $0.001 tariff applies to each onchain batch claim and each onchain channel operation such as a deposit, refund or withdrawal. Offchain verification is free. A claim records the amount owed. A separate settlement call transfers the funds to the seller. This spreads the claim fee across many calls. [Batch claim and settlement](https://github.com/x402-foundation/x402/blob/main/specs/schemes/batch-settlement/scheme_batch_settlement_evm.md#claim--settlement-strategy), [CDP pricing and supported networks](https://docs.cdp.coinbase.com/x402/seller/facilitator).
 
 CDP's facilitator supports the scheme on Base and other EVM chains. Its `createX402Server` helper currently leaves the scheme unregistered, so the seller needs an integration that handles the channel and claims the vouchers. Circle Gateway uses x402 `exact` with Gateway-specific signing requirements. [CDP scheme guidance](https://docs.cdp.coinbase.com/x402/support/faq#pricing-and-payment-schemes), [Circle x402 seller guide](https://developers.circle.com/gateway-nanopayments/howtos/x402-seller).
 
@@ -132,6 +132,10 @@ CDP's facilitator supports the scheme on Base and other EVM chains. Its `createX
 Lightning fits bitcoin services using [L402](https://docs.lightning.engineering/the-lightning-network/l402/l402). Lightning Labs' [lnget CLI/MCP](https://github.com/lightninglabs/lnget) can pay a challenge and retry the request. [Alby MCP](https://github.com/getAlby/mcp/) connects agents and n8n workflows to a compatible wallet.
 
 Aperture’s static endpoint price is a whole number of satoshis. At the November 2 BTC quote, $0.001 bought about 1.28 sats, so a seller charging per request would have to round the price. [Aperture price configuration](https://github.com/lightninglabs/aperture/blob/1f2e5a1e98adf743bc6e0765bc638d2f20c11ade/proxy/service.go#L116-L118).
+
+On a funded direct channel to the seller there is no intermediary to charge a forwarding fee. If a 1-sat invoice instead takes a route with a total 1-sat fee, the sender spends 2 sats to deliver 1. Both examples assume the route accepts the invoice and there is no separate wallet-provider charge. Each forwarding node sets its own base fee and proportional rate. [Lightning channel fees](https://docs.lightning.engineering/the-lightning-network/pathfinding/channel-fees).
+
+In November 2026, Megalith published wallet records for five mainnet transfers of **1,000 sats** each. Senders paid **4–8 sats** per transfer. Those receipts show how fees vary by route and wallet at that amount. The Lightning fee score uses the smaller **0–100 sat** group in the Fidelity–Voltage report. It contains no separate fee figure for a 1-sat invoice. [November wallet receipts](https://docs.megalithic.me/guides/best-bitcoin-wallets/#how-we-tested), [Fidelity–Voltage fee and timing data, pp. 9–10](https://www.fidelitydigitalassets.com/sites/g/files/djuvja3256/files/acquiadam/FDA_TheLightningNetwork_ExpandingBitcoinUseCases_1187503.1.0_V5.pdf#page=9).
 
 A wallet provider can remove the need to run your own node. Self-hosting adds channel and liquidity management. Routing and provider fees vary. [Alby paid MCP](https://github.com/getAlby/paidmcp).
 
@@ -146,7 +150,7 @@ To try Atto, follow the [agent-payment guide](/docs/integration/agent-payments) 
 <details>
 <summary>Scoring rules, source measurements and implementation notes</summary>
 
-**Per-call fees.** Divide the payment or claim fee by the $0.001 sale price. Zero earns 5. A positive fee up to 1% earns 4, over 1% through 10% earns 3, over 10% but below 100% earns 2, and 100% or more earns 1. A variable fee needs a route quote. The example starts after funding and after CDP's monthly allowance. It assumes one batch claim for all 1,000 vouchers. Deposits, withdrawals, conversion, liquidity and running the service affect the full cost.
+**Per-call fees.** Divide the fee by the amount paid. For the priced routes we use a $0.001 sale. Lightning uses the reported mean fee percentage for its smallest published payment-size group. Zero earns 5. A positive fee up to 1% earns 4, over 1% through 10% earns 3, over 10% but below 100% earns 2, and 100% or more earns 1. An individual Lightning payment needs a route quote. The example starts after funding and after CDP's monthly allowance. It assumes one batch claim for all 1,000 vouchers. Deposits, withdrawals, conversion, liquidity and running the service affect the full cost.
 
 **Paid API setup.** These are editorial ratings of the named buyer and seller tools. A documented client and seller integration with managed payment infrastructure earns 5. A packaged client and seller proxy with a seller-operated payment backend earns 4. Seller tooling that needs application code to verify confirmation or manage a payment channel earns 3. Wallet tools that leave the paid-HTTP flow to the seller earn 2. A route that also needs a custom wallet client would earn 1. The scores describe the work to integrate the named tools. Reliability and spending controls need separate checks. [Lightning buyer](https://github.com/lightninglabs/lnget), [Aperture seller setup](https://github.com/lightninglabs/aperture#installation--setup).
 
@@ -167,21 +171,17 @@ October 2–9 was the most recent seven-day interval with eight consecutive midn
 
 **Drawdown from the all-time high (ATH).** On November 2 the ATTO quote was $0.00003932 against a recorded high of $0.00021937. XNO was $0.319043 against $33.69 and BTC was $78,023 against $126,080. The scorecard shows the percentage below each asset’s high separately from its one-week score. Someone who bought at the peak experienced that loss in dollar value by November 2. The snapshot was retrieved at 09:59 UTC. ATTO’s quote was about seven hours old, and XNO’s and BTC’s were about a minute old. USDC was outside that snapshot. [Archived November 2 quotes and retrieval times](https://github.com/attocash/blog/blob/9a5100f6052037653607d340438992f4c476cae0/2026-11-01-payments-for-ai-agents-compared/index.mdx#L182-L190).
 
-**Chained send speed.** In a published August 2026 test, each of 500 accounts submitted 100 dependent sends, waiting for confirmation before its next send. Each pair ran on the same machine with one voter and fresh durable storage. The timer started just before submitting a prepared send and stopped when the client observed confirmation for that exact hash. Atto returned the matching transaction on its HTTP stream. Nano returned the hash over RPC and reported confirmation over WebSocket. Wallet preparation, receiving the funds and serving an API response fall outside the timer. [Timer and adapters](https://github.com/rotilho/feeless-benchmarks/blob/e87fe7995fd0e7fe420f608c04cb0966e42b9619/docs/methodology.md).
-
-Each implementation contributed 50,000 sends per run. Across ten paired runs, the median of the run means was **380.12 ms for Nano V28.2** and **399.59 ms for Atto 1.34**. Nano had the lower mean in seven pairs. For a lane of 100 dependent sends, those figures correspond to about 38.0 and 40.0 seconds of payment wait under that load. The fastest median earns 5. Each other score is five times the fastest median divided by its own, rounded to one decimal. The same test put the alternative Nano node RSNano V3.1 at 900.54 ms (2.1/5). A service using another node version or a different load can see different timings. The other routes have no matching result in this dataset. [Ten paired runs and manifests](https://github.com/rotilho/feeless-benchmarks/blob/b092bfccf487b894cd17f4230dbf914479e846ff/results/common-runner/500-account-ranges.json).
-
-With just **one active account** sending 1,000 times in sequence, the same project reported means of 22 ms for Atto and 199 ms for Nano V28.2. Those two runs used different host CPUs. We show the single-wallet figures unscored because the hardware and load change the comparison. Neither workload times a full paid API request. [Single-wallet results and hardware manifests](https://github.com/rotilho/feeless-benchmarks/blob/b092bfccf487b894cd17f4230dbf914479e846ff/docs/results.md#single-run-artifacts).
-
-**Mainnet timing observations.** These samples start and end at different events and cover different levels of settlement assurance. Use them to understand which part of each flow was measured. Complete API purchases also include the wallet and service steps described above.
+**Mainnet timing observations.** Atto and Nano use the latest complete UTC day available at the November 23 review. The Lightning sources report production payments grouped by amount or by pilot. Each row identifies what the source timed. For a service chaining API calls, measure from payment initiation until the seller returns the response to find the full wait per step.
 
 | Network | Dated observation | What it measures |
 | --- | --- | --- |
-| Atto | 158.34 ms mean on November 1, 2026 | Node arrival to confirmed storage across two node databases and all account-update types, excluding wallet preparation and submission to the node. [Metric source](https://gatekeeper.live.application.atto.cash/projections/metrics), [measurement scope](/docs/whitepaper/technical#what-determines-payment-latency). |
-| Nano | 331 ms daily mean on November 1, 2026 | Confirmation of NanoSpeed's own single-block probes. [Probe methodology](https://nanospeed.info/about). |
-| Base | 290.3 ms mean on August 12, 2026, before Denim | Submission to Flashblock receipt across 50 successful mainnet USDC self-transfers in US-east, before canonical L2 inclusion and Ethereum finality. The published aggregate omits individual timings and the measurement harness. [Dated FillBench result](https://github.com/sircharli3/fillbench-data/blob/7e726d4dd57a232af14bb59ed97b7eb7944fc8da/data/x402/x402-base-settlement.json). |
-| Solana | 399.254 ms mean across 402,618 observations in the 24 hours up to November 2, 2026 at 10:09 UTC | First slot visibility until a root notification covers the slot, excluding earlier submission and CDP processing. [Results](https://openchainbench.com/benchmarks/l1-finality), [collector](https://github.com/ChainBench/OpenChainBench/blob/main/harnesses/l1-finality/cmd/script/solana_ws.go). |
-| Lightning | 1.86-second mean across 237,000 payments in a 30-day pilot, reported in 2026 | Provider-reported offchain settlement for traffic predominantly from Cash App. The provider did not disclose precise timer boundaries or raw records. [Voltage report](https://voltage.cloud/blog/cheapest-way-to-settle-payments-instantly-a-cost-first-comparison), [pilot announcement](https://sbcevents.com/events/voltage-sbc-summit-americas/). |
+| Atto | 124.31 ms daily mean on Nov 22, 2026. Median 119 ms, 95th percentile 160 ms. | Two mainnet node databases time account updates from arrival to confirmed storage. The sample includes all update types and excludes wallet preparation and submission. Each node can observe the same transaction. The public timing series gives no sample count. [Metrics](https://gatekeeper.live.application.atto.cash/projections/metrics), [measurement scope](/docs/whitepaper/technical#what-determines-payment-latency). |
+| Nano | 323.32 ms mean across 144 probes on Nov 22, 2026 UTC | NanoSpeed’s own node sent single-block probes on mainnet. We summed the 144 published durations (46,558 ms) and divided by 144. [NanoSpeed probe table](https://nanospeed.info/), [probe methodology](https://nanospeed.info/about). |
+| CDP on Base | Historical p50 of 1.57 s for a facilitator settlement request, before Denim | On June 14, 2026 a test merchant settled 30 real $0.001 USDC payments on Base mainnet. Its timer covered the merchant’s request to the hosted CDP settlement endpoint through receipt of its response. A current post-upgrade measurement of that path was unavailable at review. [Merchant timings and code](https://gist.github.com/bykamodev-web/e66ab462b7c727b60410dea9a5fe52c8). |
+| Solana | 401.788 ms mean across 400,442 observations in the 24 hours ending Nov 23, 2026 at 19:12 UTC | OpenChainBench times the first observation of a slot until a root notification covers it. This omits the earlier submission and the facilitator’s work for a USDC payment. [Live series](https://openchainbench.com/api/stat/l1-finality), [collector](https://github.com/ChainBench/OpenChainBench/blob/main/harnesses/l1-finality/cmd/script/solana_ws.go). |
+| Lightning | 0.56 s mean for 0–100 sat payments in the Voltage data dated Oct 22, 2024. A separate pilot reported 1.86 s mean settlement in April 2026. | The small-payment group had a mean fee of 13.02% and a 95.11% success rate. Its published charts omit the group size and exact timer boundaries. The later pilot covered 237,000 deposits and withdrawals totaling $6.35 million over 30 days. Neither source times an L402 API response. [Fidelity–Voltage data, pp. 9–11](https://www.fidelitydigitalassets.com/sites/g/files/djuvja3256/files/acquiadam/FDA_TheLightningNetwork_ExpandingBitcoinUseCases_1187503.1.0_V5.pdf#page=9), [Voltage pilot](https://voltage.cloud/blog/why-crypto-bettors-get-your-best-bonuses-and-how-lightning-brings-that-margin-to-every-cash-app-user). |
+
+The [November 23 measurement download](/data/agent-payments-mainnet-2026-11-23.json) preserves the dated Atto metrics, the individual Nano probes and the Solana summary used here. The public Nano chart’s daily point matched only the first 124 of the 144 probe records when we checked.
 
 The [original November 2 snapshot](/data/agent-payments-confirmation-2026-11-02.json) preserves the measurements and timing indices used in that edition. It also includes one pre-Denim [USDC transfer](https://basescan.org/tx/0xdedc1cc426e864f08444e8bd0e9d3b8da5f3bab7baddf465d01f21575b9d6e04): 20 minutes 38 seconds elapsed between first observing L2 inclusion and first observing [Ethereum-backed batch finality](https://specs.optimism.io/glossary.html#finalized-l2-head). The download records polling timestamps, the successful receipt and the unchanged block-hash checks.
 
